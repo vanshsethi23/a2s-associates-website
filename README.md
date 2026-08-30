@@ -42,10 +42,14 @@ Copy `.env.example` to `.env`:
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | SQLite by default (`file:./a2s.db`). Point at Postgres via `@payloadcms/db-postgres` for production (see below). |
-| `PAYLOAD_SECRET` | Long random string; signs auth tokens. |
+| `DATABASE_URL` | A `file:` URL uses SQLite (local). A `postgres://` URL switches the app to Postgres automatically — no code change. |
+| `PAYLOAD_SECRET` | Long random string; signs login sessions. `openssl rand -hex 32` |
 | `NEXT_PUBLIC_SERVER_URL` | Canonical site origin, e.g. `https://a2sestates.in`. Used in metadata, sitemap, JSON-LD. |
 | `PAYLOAD_ADMIN_EMAIL/PASSWORD` | First admin user created by the seed. |
+| `BLOB_READ_WRITE_TOKEN` *or* `S3_*` | Production media storage. Leave unset locally. |
+
+Database and storage are selected from these variables in `src/lib/adapters.ts`,
+so the same code runs on a laptop and in production.
 
 ## Content management
 
@@ -63,19 +67,70 @@ Everything the A2S team needs day-to-day lives at `/admin`:
 - **Site Settings** — address, phone, email, WhatsApp, office hours, map embed,
   consent text, copyright name, social links.
 
-## Production deployment
+## Deployment
 
-The app runs anywhere Node 20+ runs (`npm run build && npm run start`).
-Recommended: Vercel or a small VPS.
+This is a server-rendered application, not a static site. It needs a Node
+runtime for the admin panel, the database, image optimisation and the contact
+form. **GitHub Pages, Netlify Drop and other static-only hosts cannot run it.**
 
-For a serverless/multi-instance host, switch the two local pieces:
+### Option A — Vercel (recommended)
 
-1. **Database** — install `@payloadcms/db-postgres` and swap the adapter in
-   `src/payload.config.ts`; point `DATABASE_URL` at Postgres (Neon/Supabase/RDS).
-2. **Media storage** — install `@payloadcms/storage-s3` (or `storage-vercel-blob`)
-   and register it in the config's `plugins`, so uploads survive redeploys.
+Fully managed, free tier is enough to launch, and it is built for Next.js.
 
-On a single VPS, SQLite + the local `media/` directory work as-is; back both up.
+1. **Database** — create a free Postgres database at
+   [Neon](https://neon.tech) (or use Vercel Postgres) and copy its connection
+   string.
+2. **Import the repo** at [vercel.com/new](https://vercel.com/new), selecting
+   this branch. Framework preset: Next.js (auto-detected).
+3. **Environment variables** — add these in the Vercel project settings:
+
+   | Variable | Value |
+   | --- | --- |
+   | `DATABASE_URL` | The Neon `postgres://…` connection string |
+   | `PAYLOAD_SECRET` | Output of `openssl rand -hex 32` |
+   | `NEXT_PUBLIC_SERVER_URL` | `https://your-domain.com` |
+
+4. **Media storage** — in the Vercel dashboard open Storage, create a **Blob**
+   store and connect it to the project. This sets `BLOB_READ_WRITE_TOKEN`
+   automatically, and uploads then survive redeploys.
+5. **Database schema** — Postgres needs committed migrations. Once, on your
+   own machine with `DATABASE_URL` pointing at Neon:
+
+   ```bash
+   npm run migrate:create   # generates src/migrations/*
+   git add src/migrations && git commit -m "Add initial database migration"
+   ```
+
+   Then set the Vercel **Build Command** to `npm run build:deploy`, which runs
+   the migrations before building.
+6. **First admin user** — with `DATABASE_URL` still pointing at Neon, run
+   `npm run seed` once locally to create the admin login and starter content.
+7. Add your domain under Vercel → Settings → Domains and point the DNS records
+   it shows at your registrar.
+
+### Option B — A VPS (Hetzner, DigitalOcean, Linode)
+
+Simpler in concept and cheaper at scale, but you maintain the server. Because a
+VPS has a real, persistent disk, **SQLite and the local `media/` folder work
+as-is** — no Postgres, no object storage, nothing extra to configure.
+
+```bash
+git clone <repo> && cd a2s-associates-website
+npm ci && cp .env.example .env   # edit .env
+npm run seed && npm run build
+npx pm2 start "npm run start" --name a2s   # keeps it running and restarts on reboot
+```
+
+Put Nginx or Caddy in front for HTTPS, and back up `a2s.db` and `media/` on a
+schedule — those two files are the entire site's content.
+
+### What will not work
+
+| Host | Why |
+| --- | --- |
+| GitHub Pages | Static files only. No Node server, so no `/admin`, no database, no contact form, no image optimisation. |
+| Plain S3 / Cloudflare Pages (static mode) | Same reason. |
+| Any host without persistent storage, using SQLite | The database file resets on every deploy. Use Postgres there. |
 
 ## Placeholder content — replace before launch
 
@@ -114,4 +169,6 @@ as fractions of the film; retune them to the new footage.
 | `npm run build` / `start` | Production build / serve |
 | `npm run seed` | First admin user + sample content |
 | `npm run generate:types` | Regenerate `src/payload-types.ts` after schema changes |
+| `npm run migrate:create` | Generate a Postgres migration (production only) |
+| `npm run build:deploy` | Run migrations, then build. Use as the host's build command. |
 | `npm run lint` | ESLint |

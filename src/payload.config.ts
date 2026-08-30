@@ -1,10 +1,10 @@
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { databaseAdapter, storagePlugins } from './lib/adapters'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Properties } from './collections/Properties'
@@ -36,11 +36,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || 'file:./a2s.db',
-    },
-  }),
+  db: databaseAdapter,
   sharp,
-  plugins: [],
+  plugins: [...storagePlugins],
 })
