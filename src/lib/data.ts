@@ -88,11 +88,31 @@ export const asMedia = (value: unknown): Media | null =>
     ? (value as Media)
     : null
 
+/**
+ * When `serverURL` is configured, Payload returns absolute URLs for files it
+ * serves itself (`https://site.com/api/media/file/x.webp`). next/image treats
+ * any absolute URL as a remote host and rejects it unless that host is
+ * allow-listed, which would mean listing every domain the site ever runs on.
+ * Collapsing our own API routes back to a path avoids that entirely.
+ *
+ * URLs on a real external host (Vercel Blob, S3, R2) are left untouched and
+ * are allow-listed in next.config.ts instead.
+ */
+const toSameOriginPath = (url: string): string => {
+  if (!url.startsWith('http')) return url
+  try {
+    const parsed = new URL(url)
+    return parsed.pathname.startsWith('/api/') ? `${parsed.pathname}${parsed.search}` : url
+  } catch {
+    return url
+  }
+}
+
 /** Best URL for a media doc at a named size, falling back to the original. */
 export const mediaUrl = (media: Media | null, size?: 'thumbnail' | 'card' | 'large' | 'og'): string | null => {
   if (!media) return null
-  if (size && media.sizes?.[size]?.url) return media.sizes[size]!.url!
-  return media.url ?? null
+  const url = (size && media.sizes?.[size]?.url) || media.url
+  return url ? toSameOriginPath(url) : null
 }
 
 export const AVAILABILITY_LABELS: Record<string, string> = {

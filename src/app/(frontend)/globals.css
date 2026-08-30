@@ -268,22 +268,22 @@ button {
   color: var(--brass);
 }
 
-/* reveal-on-scroll (js adds .is-in; reduced motion handled below).
-   Gated on html.js so content stays visible without JavaScript. */
-html.js .reveal {
+/* reveal-on-scroll: JS adds .is-in when the element enters the viewport.
+   Without JavaScript the <noscript> block in layout.tsx reveals everything. */
+.reveal {
   opacity: 0;
   transform: translateY(26px);
   transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
   transition-delay: var(--reveal-delay, 0s);
 }
 
-html.js .reveal.is-in {
+.reveal.is-in {
   opacity: 1;
   transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.js .reveal {
+  .reveal {
     opacity: 1;
     transform: none;
     transition: none;

@@ -42,7 +42,10 @@ export default async function FrontendLayout({ children }: { children: React.Rea
   return (
     <html lang="en" className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable}`}>
       <body>
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Scroll reveals need JavaScript to trigger; without it, show everything. */}
+        <noscript>
+          <style>{'.reveal{opacity:1!important;transform:none!important}'}</style>
+        </noscript>
         <a href="#main" className="skip-link">
           Skip to content
         </a>
