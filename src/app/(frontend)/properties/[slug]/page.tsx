@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { EnquiryForm } from '@/components/EnquiryForm'
-import { Reveal } from '@/components/Reveal'
+import { GalleryCarousel, type CarouselSlide } from '@/components/GalleryCarousel'
 import { RichTextContent } from '@/components/RichTextContent'
 import {
   AVAILABILITY_LABELS,
@@ -131,23 +131,18 @@ export default async function PropertyDetailPage({ params }: Params) {
                 <h2 className="display" style={{ fontSize: 'var(--text-heading)', marginBottom: '1.4rem' }}>
                   The residence in pictures
                 </h2>
-                <div className="gallery-grid">
-                  {gallery.map((g, i) => (
-                    <Reveal key={g.media!.id} as="div" delay={(i % 2) * 0.06}>
-                      <figure>
-                        <Image
-                          src={mediaUrl(g.media, 'large')!}
-                          alt={g.media!.alt}
-                          width={g.media!.sizes?.large?.width || g.media!.width || 1600}
-                          height={g.media!.sizes?.large?.height || g.media!.height || 900}
-                          sizes="(max-width: 768px) 100vw, 60vw"
-                          loading="lazy"
-                        />
-                        {g.caption ? <figcaption>{g.caption}</figcaption> : null}
-                      </figure>
-                    </Reveal>
-                  ))}
-                </div>
+                <GalleryCarousel
+                  label={`Photographs of ${property.title}`}
+                  slides={gallery.map(
+                    (g): CarouselSlide => ({
+                      src: mediaUrl(g.media, 'large')!,
+                      alt: g.media!.alt,
+                      width: g.media!.sizes?.large?.width || g.media!.width || 1600,
+                      height: g.media!.sizes?.large?.height || g.media!.height || 900,
+                      caption: g.caption,
+                    }),
+                  )}
+                />
               </div>
             ) : null}
 

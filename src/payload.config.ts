@@ -16,6 +16,9 @@ import { SiteSettings } from './globals/SiteSettings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const isProduction = process.env.NODE_ENV === 'production'
+const publicURL = process.env.NEXT_PUBLIC_SERVER_URL || ''
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -32,7 +35,20 @@ export default buildConfig({
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || undefined,
+  /**
+   * serverURL doubles as Payload's CSRF allow-list: with it set, cookie-based
+   * writes are refused from any other origin. Locally the dev server hops
+   * ports (3000 -> 3001 when busy), which locked the admin out of publishing,
+   * so the canonical URL is only pinned in production. Extra production
+   * origins (e.g. a preview URL) can be added via PAYLOAD_CSRF_ORIGINS,
+   * comma-separated.
+   */
+  serverURL: isProduction && publicURL ? publicURL : undefined,
+  csrf: isProduction
+    ? [publicURL, ...(process.env.PAYLOAD_CSRF_ORIGINS || '').split(',')]
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+    : [],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

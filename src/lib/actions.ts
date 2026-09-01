@@ -13,7 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export async function submitEnquiry(_prev: EnquiryState | null, formData: FormData): Promise<EnquiryState> {
   // honeypot: bots fill every field
   if (String(formData.get('company') || '').length > 0) {
-    return { ok: true, message: 'Thank you. We will reply within one working day.' }
+    return { ok: true, message: 'Your enquiry has been received. Our team will get back to you shortly.' }
   }
 
   const firstName = String(formData.get('firstName') || '').trim()
@@ -47,7 +47,7 @@ export async function submitEnquiry(_prev: EnquiryState | null, formData: FormDa
         property: propertyId ? Number(propertyId) || undefined : undefined,
       },
     })
-    return { ok: true, message: 'Thank you. Your enquiry has been received; we reply in writing within one working day.' }
+    return { ok: true, message: 'Your enquiry has been received. Our team will get back to you shortly.' }
   } catch {
     return { ok: false, message: 'Something went wrong while sending your enquiry. Please try again, or reach us by phone or email.' }
   }

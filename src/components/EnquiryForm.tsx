@@ -1,17 +1,59 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 
 import { submitEnquiry, type EnquiryState } from '@/lib/actions'
 
+function SuccessDialog({ message, onClose }: { message: string; onClose: () => void }) {
+  const boxRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    boxRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    document.documentElement.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.documentElement.style.overflow = ''
+    }
+  }, [onClose])
+
+  return (
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="enquiry-ok-title"
+        tabIndex={-1}
+        ref={boxRef}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="modal-rule" aria-hidden="true" />
+        <h2 id="enquiry-ok-title">Thank you.</h2>
+        <p>{message}</p>
+        <button type="button" className="btn btn-primary" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function EnquiryForm({ consentText, propertyId }: { consentText: string; propertyId?: number }) {
   const [state, action, pending] = useActionState<EnquiryState | null, FormData>(submitEnquiry, null)
+  const [dismissed, setDismissed] = useState(false)
 
   if (state?.ok) {
     return (
-      <div className="form-status ok" role="status">
-        {state.message}
-      </div>
+      <>
+        {!dismissed ? <SuccessDialog message={state.message} onClose={() => setDismissed(true)} /> : null}
+        <div className="form-status ok" role="status">
+          {state.message}
+        </div>
+      </>
     )
   }
 
