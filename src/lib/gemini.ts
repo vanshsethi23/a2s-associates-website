@@ -7,8 +7,12 @@
  */
 
 const API_BASE = process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta'
-export const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash'
-export const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image'
+// Verified against the live API on 2026-09-02: gemini-2.5-flash returned 404
+// ("no longer available to new users"); these are Google's own current
+// generation as of that check. Still env-overridable, since Google will move
+// these on again.
+export const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-3.6-flash'
+export const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image'
 
 export class GeminiError extends Error {
   constructor(
