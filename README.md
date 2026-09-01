@@ -211,7 +211,25 @@ IST**, then publishes it.
    npm run blog:generate
    ```
 
-   This writes one real article immediately and prints where it landed.
+   This writes one real article immediately and prints where it landed, e.g.
+
+   ```
+   Published: Verifying Lift Service Contracts When Buying Top Floors
+   Topic:  How to verify a lift service contract before buying a top floor
+   URL:    /blog/verifying-lift-service-contracts-when-buying-top-floors
+   Image:  none yet. Add one in /admin, using the suggested image brief saved on the post.
+   ```
+
+   Read it at that URL with `npm run dev` running, and open the same post in
+   `/admin` to see the takeaways, FAQs, SEO fields and image brief it produced.
+
+   To test exactly what the scheduler will do, call the endpoint the same way
+   Vercel Cron does, with the dev server running:
+
+   ```bash
+   curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
+     http://localhost:3000/api/cron/publish-post
+   ```
 
 4. Enable **one** scheduler, not both:
    - **Vercel**: `vercel.json` already declares the cron. Set `CRON_SECRET` in

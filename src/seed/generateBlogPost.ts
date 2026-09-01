@@ -23,7 +23,13 @@ const run = async (): Promise<void> => {
     console.log(`  ${result.status === 'draft' ? 'Draft saved' : 'Published'}: ${result.title}`)
     console.log(`  Topic:  ${result.topic}`)
     console.log(`  URL:    /blog/${result.slug}`)
-    console.log(`  Image:  ${result.imageGenerated ? 'generated' : `FAILED (${result.imageError})`}`)
+    const imageLine =
+      result.image === 'generated'
+        ? 'generated'
+        : result.image === 'skipped'
+          ? 'none yet. Add one in /admin, using the suggested image brief saved on the post.'
+          : `generation FAILED: ${result.imageError}`
+    console.log(`  Image:  ${imageLine}`)
     console.log('')
     process.exit(0)
   } catch (err) {

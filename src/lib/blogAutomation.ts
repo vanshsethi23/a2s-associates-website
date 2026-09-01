@@ -217,7 +217,12 @@ export type PublishResult = {
   title: string
   topic: string
   status: 'published' | 'draft'
-  imageGenerated: boolean
+  /**
+   * 'skipped' is the normal case: images are made by hand in the admin panel,
+   * so a run with no image is a success, not a failure. Kept distinct from
+   * 'failed' so a real API problem is never reported as routine.
+   */
+  image: 'generated' | 'skipped' | 'failed'
   imageError?: string
 }
 
@@ -338,7 +343,7 @@ export const generateAndPublishPost = async (payload: Payload): Promise<PublishR
     title: article.title,
     topic,
     status: reviewMode ? 'draft' : 'published',
-    imageGenerated: Boolean(featuredImageId),
+    image: featuredImageId ? 'generated' : generateImages ? 'failed' : 'skipped',
     imageError,
   }
 }
