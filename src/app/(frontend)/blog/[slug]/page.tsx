@@ -5,6 +5,16 @@ import { notFound } from 'next/navigation'
 
 import { RichTextContent } from '@/components/RichTextContent'
 import { asMedia, getPostBySlug, mediaUrl } from '@/lib/data'
+import {
+  ORG_ID,
+  SITE_URL,
+  WEBSITE_ID,
+  absoluteUrl,
+  breadcrumbJsonLd,
+  faqJsonLd,
+  jsonLdGraph,
+  jsonLdScript,
+} from '@/lib/seo'
 
 export const revalidate = 3600
 
@@ -34,20 +44,41 @@ export default async function BlogPostPage({ params }: Params) {
   const imgUrl = mediaUrl(img, 'large')
   const category = post.category && typeof post.category === 'object' ? post.category.title : null
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    datePublished: post.publishedDate || undefined,
-    dateModified: post.updatedAt,
-    author: { '@type': 'Organization', name: post.author || 'A2S Estates' },
-    image: imgUrl || undefined,
-    description: post.excerpt || undefined,
-  }
+  const faqs = (post.faqs || []).map((f) => ({ question: f.question, answer: f.answer }))
+
+  const jsonLd = jsonLdGraph(
+    breadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'News & Blogs', path: '/blog' },
+      { name: post.title, path: `/blog/${post.slug}` },
+    ]),
+    {
+      '@type': 'Article',
+      '@id': `${SITE_URL}/blog/${post.slug}#article`,
+      headline: post.title,
+      description: post.excerpt || undefined,
+      image: imgUrl ? [absoluteUrl(imgUrl)] : undefined,
+      datePublished: post.publishedDate || post.createdAt,
+      dateModified: post.updatedAt,
+      author: { '@type': 'Organization', name: post.author || 'A2S Estates', '@id': ORG_ID },
+      publisher: { '@id': ORG_ID },
+      isPartOf: { '@id': WEBSITE_ID },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
+      articleSection: category || undefined,
+      keywords: (post.tags || []).map((t) => t.tag).filter(Boolean).join(', ') || undefined,
+      inLanguage: 'en-IN',
+      // Tells voice and answer engines which parts are safe to read aloud.
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['.article-head h1', '.article-head p'],
+      },
+    },
+    faqJsonLd(faqs),
+  )
 
   return (
     <article>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
 
       <section className="page-hero" style={{ paddingBottom: 'clamp(2rem, 4vw, 3rem)' }}>
         <div className="container article-head" style={{ marginInline: 'auto' }}>
@@ -83,6 +114,25 @@ export default async function BlogPostPage({ params }: Params) {
           ) : null}
 
           <RichTextContent data={post.content} />
+
+          {faqs.length > 0 ? (
+            <div style={{ maxWidth: 680, margin: '3.5rem auto 0' }}>
+              <h2 className="display" style={{ fontSize: 'var(--text-heading)', marginBottom: '1.2rem' }}>
+                Frequently asked
+              </h2>
+              <div className="faq-list">
+                {faqs.map((faq) => (
+                  <details className="faq-item" key={faq.question} name="post-faq">
+                    <summary>
+                      <h3>{faq.question}</h3>
+                      <span className="faq-marker" aria-hidden="true" />
+                    </summary>
+                    <p>{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {post.tags && post.tags.length > 0 ? (
             <div className="tag-row" style={{ maxWidth: 680, margin: '3rem auto 0' }}>

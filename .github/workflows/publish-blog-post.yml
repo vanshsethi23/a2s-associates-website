@@ -1,0 +1,26 @@
+name: Publish scheduled blog post
+
+# Every Monday and Saturday at 03:30 UTC (09:00 IST).
+#
+# This is the host-agnostic alternative to Vercel Cron: use whichever suits the
+# hosting you end up on, but do not enable both, or two articles publish at once.
+# Requires two repository secrets:
+#   SITE_URL     - e.g. https://a2sestates.in
+#   CRON_SECRET  - the same value set on the site's environment
+on:
+  schedule:
+    - cron: '30 3 * * 1,6'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the scheduled article
+        run: |
+          response=$(curl --silent --show-error --fail-with-body \
+            --max-time 300 \
+            --request POST \
+            --header "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.SITE_URL }}/api/cron/publish-post")
+          echo "$response"

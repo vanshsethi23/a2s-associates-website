@@ -5,8 +5,9 @@ import { CinematicHero } from '@/components/CinematicHero'
 import { PostCard } from '@/components/PostCard'
 import { PropertyCard } from '@/components/PropertyCard'
 import { Reveal } from '@/components/Reveal'
-import { phoneNumbers, postalAddressJsonLd, primaryPhone, telHref } from '@/lib/contact'
+import { primaryPhone, telHref } from '@/lib/contact'
 import { getFeaturedProperties, getPosts, getSiteSettings } from '@/lib/data'
+import { ORG_ID, SITE_URL, WEBSITE_ID, absoluteUrl, jsonLdGraph, jsonLdScript } from '@/lib/seo'
 import { SERVICES } from '@/lib/services'
 
 export const revalidate = 3600
@@ -37,21 +38,22 @@ export default async function HomePage() {
     getSiteSettings(),
   ])
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateAgent',
-    name: 'A2S Estates',
-    slogan: 'Ambition to Success',
-    areaServed: 'South Delhi, New Delhi, India',
-    telephone: phoneNumbers(settings),
-    email: settings.email || undefined,
-    address: postalAddressJsonLd(settings),
-    openingHours: settings.officeHours || undefined,
-  }
+  // The Organization and WebSite nodes are emitted once in the root layout,
+  // so this page only needs its own page-level node.
+  const jsonLd = jsonLdGraph({
+    '@type': 'WebPage',
+    '@id': `${SITE_URL}/#webpage`,
+    url: `${SITE_URL}/`,
+    name: 'A2S Estates · South Delhi Builder Floors',
+    about: { '@id': ORG_ID },
+    isPartOf: { '@id': WEBSITE_ID },
+    primaryImageOfPage: absoluteUrl('/og-home.jpg'),
+    inLanguage: 'en-IN',
+  })
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
       <CinematicHero />
 
       {/* editorial introduction */}

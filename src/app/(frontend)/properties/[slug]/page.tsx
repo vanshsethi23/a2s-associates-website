@@ -14,6 +14,7 @@ import {
   getSiteSettings,
   mediaUrl,
 } from '@/lib/data'
+import { ORG_ID, SITE_URL, absoluteUrl, breadcrumbJsonLd, jsonLdGraph, jsonLdScript } from '@/lib/seo'
 
 export const revalidate = 3600
 
@@ -60,24 +61,81 @@ export default async function PropertyDetailPage({ params }: Params) {
   ].filter(Boolean) as { k: string; v: string }[]
   const video = property.videoUrl ? embedUrl(property.videoUrl) : null
   const videoFile = asMedia(property.videoFile)
+  const galleryUrls = gallery
+    .map((g) => mediaUrl(g.media, 'large'))
+    .filter((u): u is string => Boolean(u))
+    .map(absoluteUrl)
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateListing',
-    name: property.title,
-    url: `/properties/${property.slug}`,
-    image: heroUrl || undefined,
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: property.locality,
-      addressRegion: property.location || 'South Delhi',
-      addressCountry: 'IN',
+  // Price is free text (e.g. "₹ 4.25 Cr", "₹ 85,000 / month") so it is only
+  // published as a structured offer when a plain number can be read from it.
+  const numericPrice = (() => {
+    const raw = property.price || ''
+    const m = raw.match(/([\d.,]+)\s*(Cr|Crore|Lakh|Lac)?/i)
+    if (!m) return undefined
+    const value = Number(m[1].replace(/,/g, ''))
+    if (!Number.isFinite(value)) return undefined
+    const unit = (m[2] || '').toLowerCase()
+    if (unit.startsWith('cr')) return value * 10000000
+    if (unit.startsWith('la')) return value * 100000
+    return value
+  })()
+
+  const isRental = property.listingType === 'rent'
+  const forSale = property.availability === 'available' || property.availability === 'under-construction'
+
+  const jsonLd = jsonLdGraph(
+    breadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'Properties', path: '/properties' },
+      { name: property.title, path: `/properties/${property.slug}` },
+    ]),
+    {
+      '@type': 'RealEstateListing',
+      '@id': `${SITE_URL}/properties/${property.slug}#listing`,
+      url: `${SITE_URL}/properties/${property.slug}`,
+      name: property.title,
+      description: property.seo?.metaDescription || undefined,
+      image: galleryUrls.length > 0 ? galleryUrls : heroUrl ? [absoluteUrl(heroUrl)] : undefined,
+      datePosted: property.createdAt,
+      provider: { '@id': ORG_ID },
+      inLanguage: 'en-IN',
+      about: {
+        '@type': 'Accommodation',
+        name: property.title,
+        accommodationCategory: PROPERTY_TYPE_LABELS[property.propertyType] || undefined,
+        numberOfRooms: property.configuration || undefined,
+        floorLevel: property.floor || undefined,
+        floorSize: property.area ? { '@type': 'QuantitativeValue', name: property.area } : undefined,
+        amenityFeature: (property.amenities || []).map((a) => ({
+          '@type': 'LocationFeatureSpecification',
+          name: a.name,
+        })),
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: property.locality,
+          addressRegion: property.location || 'South Delhi',
+          addressCountry: 'IN',
+        },
+      },
+      ...(numericPrice
+        ? {
+            offers: {
+              '@type': 'Offer',
+              price: numericPrice,
+              priceCurrency: 'INR',
+              availability: forSale ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+              ...(isRental
+                ? { priceSpecification: { '@type': 'UnitPriceSpecification', price: numericPrice, priceCurrency: 'INR', unitCode: 'MON' } }
+                : {}),
+            },
+          }
+        : {}),
     },
-  }
+  )
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
 
       <section className="prop-hero">
         {heroUrl ? (

@@ -11,6 +11,7 @@ import { Properties } from './collections/Properties'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
 import { Enquiries } from './collections/Enquiries'
+import { BlogTopics } from './collections/BlogTopics'
 import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -31,7 +32,7 @@ export default buildConfig({
     },
     avatar: 'default',
   },
-  collections: [Properties, Posts, Categories, Media, Enquiries, Users],
+  collections: [Properties, Posts, Categories, BlogTopics, Media, Enquiries, Users],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

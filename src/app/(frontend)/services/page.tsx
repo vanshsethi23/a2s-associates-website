@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { Reveal } from '@/components/Reveal'
+import { SERVICE_FAQS } from '@/lib/faqs'
+import { ORG_ID, SITE_URL, breadcrumbJsonLd, faqJsonLd, jsonLdGraph, jsonLdScript } from '@/lib/seo'
 import { SERVICES } from '@/lib/services'
 
 export const revalidate = 3600
@@ -14,8 +16,25 @@ export const metadata: Metadata = {
 }
 
 export default function ServicesPage() {
+  const jsonLd = jsonLdGraph(
+    breadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'Services', path: '/services' },
+    ]),
+    faqJsonLd(SERVICE_FAQS),
+    {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/services#webpage`,
+      url: `${SITE_URL}/services`,
+      name: 'Services · A2S Estates',
+      about: { '@id': ORG_ID },
+      inLanguage: 'en-IN',
+    },
+  )
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
       <section className="page-hero">
         <div className="container">
           <span className="label">Services</span>
@@ -49,6 +68,31 @@ export default function ServicesPage() {
               </article>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      <section className="section bg-stone" aria-labelledby="faq-heading">
+        <div className="container">
+          <div className="section-head">
+            <Reveal>
+              <h2 id="faq-heading" className="display" style={{ fontSize: 'var(--text-display)' }}>
+                Questions we are asked often.
+              </h2>
+            </Reveal>
+          </div>
+          <div className="faq-list">
+            {SERVICE_FAQS.map((faq, i) => (
+              <Reveal key={faq.question} delay={(i % 3) * 0.05}>
+                <details className="faq-item" name="service-faq">
+                  <summary>
+                    <h3>{faq.question}</h3>
+                    <span className="faq-marker" aria-hidden="true" />
+                  </summary>
+                  <p>{faq.answer}</p>
+                </details>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 

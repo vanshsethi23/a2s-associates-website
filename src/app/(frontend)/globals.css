@@ -1427,6 +1427,83 @@ a.service-row:hover h3 {
   color: var(--text-faint);
 }
 
+/* --- FAQ accordion -------------------------------------------------------- */
+
+.faq-list {
+  border-top: 1px solid var(--border-light);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary h3 {
+  font-family: var(--font-display-stack);
+  font-weight: 420;
+  font-size: 1.2rem;
+  line-height: 1.35;
+  color: var(--text-strong);
+  margin: 0;
+  transition: color 0.25s var(--ease-out);
+}
+
+.faq-item summary:hover h3 {
+  color: var(--brass-strong);
+}
+
+/* plus sign that becomes a minus when the answer is open */
+.faq-marker {
+  position: relative;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.faq-marker::before,
+.faq-marker::after {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 1px;
+  background: var(--brass);
+  transition: transform 0.3s var(--ease-out);
+}
+
+.faq-marker::after {
+  transform: rotate(90deg);
+}
+
+.faq-item[open] .faq-marker::after {
+  transform: rotate(0deg);
+}
+
+.faq-item p {
+  padding: 0 0 1.6rem;
+  max-width: 68ch;
+  color: var(--text-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-marker::before,
+  .faq-marker::after {
+    transition: none;
+  }
+}
+
 /* --- gallery carousel ----------------------------------------------------- */
 
 .carousel-frame {

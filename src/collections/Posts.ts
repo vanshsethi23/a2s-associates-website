@@ -72,6 +72,20 @@ export const Posts: CollectionConfig = {
               },
             },
             { name: 'content', type: 'richText', required: true },
+            {
+              name: 'faqs',
+              label: 'Frequently asked questions',
+              type: 'array',
+              labels: { singular: 'Question', plural: 'Questions' },
+              admin: {
+                description:
+                  'Shown at the end of the article and published as FAQ structured data, which is what AI answer engines quote. Keep answers short and factual.',
+              },
+              fields: [
+                { name: 'question', type: 'text', required: true },
+                { name: 'answer', type: 'textarea', required: true },
+              ],
+            },
           ],
         },
         {

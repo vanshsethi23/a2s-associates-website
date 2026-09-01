@@ -20,7 +20,8 @@
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "build:deploy": "npm run migrate && npm run build",
-    "seed:contact": "tsx --env-file=.env src/seed/updateContact.ts"
+    "seed:contact": "tsx --env-file=.env src/seed/updateContact.ts",
+    "blog:generate": "tsx --env-file=.env src/seed/generateBlogPost.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.88.0",

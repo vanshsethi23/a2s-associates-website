@@ -6,10 +6,9 @@ import { Header } from '@/components/Header'
 import { phoneNumbers } from '@/lib/contact'
 import { getSiteSettings } from '@/lib/data'
 import { fraunces, plexMono, plexSans } from '@/lib/fonts'
+import { SITE_URL, jsonLdGraph, jsonLdScript, organizationJsonLd, websiteJsonLd } from '@/lib/seo'
 
 import './globals.css'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -29,8 +28,22 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'A2S Estates',
-    images: [{ url: '/og-home.jpg', width: 1200, height: 630 }],
+    locale: 'en_IN',
+    images: [{ url: '/og-home.jpg', width: 1200, height: 630, alt: 'A2S Estates, South Delhi' }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'A2S Estates · South Delhi Builder Floors',
+    description:
+      'Sale, purchase, renting and collaboration of builder floors, pre-owned floors and office spaces across South Delhi, with turnkey interiors and construction.',
+    images: ['/og-home.jpg'],
+  },
+  alternates: { canonical: '/' },
+  category: 'Real Estate',
+  authors: [{ name: 'A2S Estates', url: SITE_URL }],
+  creator: 'A2S Estates',
+  publisher: 'A2S Estates',
+  formatDetection: { telephone: true, address: true, email: true },
 }
 
 export const viewport: Viewport = {
@@ -40,9 +53,17 @@ export const viewport: Viewport = {
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings()
 
+  // One entity graph for the whole site: every page inherits the same
+  // Organization and WebSite nodes, so engines resolve them to one business.
+  const siteGraph = jsonLdGraph(organizationJsonLd(settings), websiteJsonLd())
+
   return (
-    <html lang="en" className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="en-IN" className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(siteGraph) }}
+        />
         {/* Scroll reveals need JavaScript to trigger; without it, show everything. */}
         <noscript>
           <style>{'.reveal{opacity:1!important;transform:none!important}'}</style>

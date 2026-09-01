@@ -70,6 +70,7 @@ export interface Config {
     properties: Property;
     posts: Post;
     categories: Category;
+    'blog-topics': BlogTopic;
     media: Media;
     enquiries: Enquiry;
     users: User;
@@ -83,6 +84,7 @@ export interface Config {
     properties: PropertiesSelect<false> | PropertiesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    'blog-topics': BlogTopicsSelect<false> | BlogTopicsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -364,6 +366,16 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
+   * Shown at the end of the article and published as FAQ structured data, which is what AI answer engines quote. Keep answers short and factual.
+   */
+  faqs?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * The byline shown on the article.
    */
   author?: string | null;
@@ -399,6 +411,31 @@ export interface Category {
   id: number;
   title: string;
   slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * The queue the automatic writer works through. Add topics you want covered; the next scheduled post (Monday and Saturday) takes the oldest one still marked Queued. If the queue is empty the writer falls back to its own South Delhi property topics, so the site never goes quiet.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-topics".
+ */
+export interface BlogTopic {
+  id: number;
+  /**
+   * e.g. "How stilt parking rights are allocated in a builder floor rebuild"
+   */
+  topic: string;
+  /**
+   * Optional. Anything the article must cover or avoid, in plain English. Passed to the writer as instructions.
+   */
+  angle?: string | null;
+  status?: ('queued' | 'published' | 'skipped') | null;
+  usedAt?: string | null;
+  /**
+   * The article generated from this topic.
+   */
+  post?: (number | null) | Post;
   updatedAt: string;
   createdAt: string;
 }
@@ -491,6 +528,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'blog-topics';
+        value: number | BlogTopic;
       } | null)
     | ({
         relationTo: 'media';
@@ -624,6 +665,13 @@ export interface PostsSelect<T extends boolean = true> {
   featuredImage?: T;
   excerpt?: T;
   content?: T;
+  faqs?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   author?: T;
   tags?:
     | T
@@ -650,6 +698,19 @@ export interface PostsSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-topics_select".
+ */
+export interface BlogTopicsSelect<T extends boolean = true> {
+  topic?: T;
+  angle?: T;
+  status?: T;
+  usedAt?: T;
+  post?: T;
   updatedAt?: T;
   createdAt?: T;
 }
