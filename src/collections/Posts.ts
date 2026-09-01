@@ -8,7 +8,7 @@ export const Posts: CollectionConfig = {
   labels: { singular: 'Blog post', plural: 'Blog posts' },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', 'publishedDate', '_status'],
+    defaultColumns: ['title', 'category', 'featuredImage', 'publishedDate', '_status'],
     description:
       'Articles for the News & Blogs section. Save Draft to keep writing, Publish when it should go live.',
     livePreview: {
@@ -63,6 +63,19 @@ export const Posts: CollectionConfig = {
               name: 'featuredImage',
               type: 'upload',
               relationTo: 'media',
+              admin: {
+                description:
+                  'The lead image, shown on cards and at the top of the article. Articles without one still publish, but adding an image makes the page eligible for image-rich search results.',
+              },
+            },
+            {
+              name: 'imageBrief',
+              label: 'Suggested image brief',
+              type: 'textarea',
+              admin: {
+                description:
+                  'Written by the automatic writer as a starting point for the featured image. Paste it into your image tool, then upload the result above. Internal only: never shown on the website.',
+              },
             },
             {
               name: 'excerpt',
@@ -70,6 +83,17 @@ export const Posts: CollectionConfig = {
               admin: {
                 description: 'A one or two sentence summary shown on listing cards.',
               },
+            },
+            {
+              name: 'keyTakeaways',
+              label: 'Key takeaways',
+              type: 'array',
+              labels: { singular: 'Takeaway', plural: 'Key takeaways' },
+              admin: {
+                description:
+                  'Three or four short, self-contained points shown in a summary box at the top of the article. Search and AI answer engines quote these directly, so each one should make sense on its own, without the surrounding article.',
+              },
+              fields: [{ name: 'point', type: 'text', required: true }],
             },
             { name: 'content', type: 'richText', required: true },
             {

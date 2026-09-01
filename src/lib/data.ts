@@ -71,6 +71,49 @@ export const getPosts = cache(async (opts: { page?: number; limit?: number } = {
   })
 })
 
+/**
+ * Other articles to link to from the end of a post: same category first, then
+ * the most recent, so a new site with one category still links somewhere.
+ * Internal links are what tie the articles into one topical cluster for search
+ * engines rather than leaving each as an island.
+ */
+export const getRelatedPosts = cache(
+  async (currentId: number, categoryId?: number, limit = 3): Promise<Post[]> => {
+    const payload = await getPayloadClient()
+    const base = { _status: { equals: 'published' }, id: { not_equals: currentId } }
+
+    if (categoryId) {
+      const sameCategory = await payload.find({
+        collection: 'posts',
+        where: { ...base, category: { equals: categoryId } } as never,
+        sort: '-publishedDate',
+        limit,
+        depth: 1,
+      })
+      if (sameCategory.docs.length >= limit) return sameCategory.docs
+      // Top up from the rest so the section is never half empty.
+      const rest = await payload.find({
+        collection: 'posts',
+        where: base as never,
+        sort: '-publishedDate',
+        limit: limit + sameCategory.docs.length,
+        depth: 1,
+      })
+      const seen = new Set(sameCategory.docs.map((d) => d.id))
+      return [...sameCategory.docs, ...rest.docs.filter((d) => !seen.has(d.id))].slice(0, limit)
+    }
+
+    const res = await payload.find({
+      collection: 'posts',
+      where: base as never,
+      sort: '-publishedDate',
+      limit,
+      depth: 1,
+    })
+    return res.docs
+  },
+)
+
 export const getPostBySlug = cache(async (slug: string): Promise<Post | null> => {
   const payload = await getPayloadClient()
   const res = await payload.find({

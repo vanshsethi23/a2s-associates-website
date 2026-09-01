@@ -3,8 +3,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { PostCard } from '@/components/PostCard'
 import { RichTextContent } from '@/components/RichTextContent'
-import { asMedia, getPostBySlug, mediaUrl } from '@/lib/data'
+import { asMedia, getPostBySlug, getRelatedPosts, mediaUrl } from '@/lib/data'
+import { lexicalToPlainText } from '@/lib/lexical'
+import { relatedServices } from '@/lib/relatedServices'
 import {
   ORG_ID,
   SITE_URL,
@@ -45,6 +48,14 @@ export default async function BlogPostPage({ params }: Params) {
   const category = post.category && typeof post.category === 'object' ? post.category.title : null
 
   const faqs = (post.faqs || []).map((f) => ({ question: f.question, answer: f.answer }))
+  const takeaways = (post.keyTakeaways || []).map((t) => t.point).filter(Boolean)
+  const tags = (post.tags || []).map((t) => t.tag).filter(Boolean)
+
+  const categoryId =
+    post.category && typeof post.category === 'object' ? (post.category.id as number) : undefined
+  const related = await getRelatedPosts(post.id as number, categoryId, 3)
+  const services = relatedServices([post.title, post.excerpt, ...tags].filter(Boolean).join(' '))
+  const wordCount = lexicalToPlainText(post.content).split(/\s+/).filter(Boolean).length
 
   const jsonLd = jsonLdGraph(
     breadcrumbJsonLd([
@@ -65,7 +76,12 @@ export default async function BlogPostPage({ params }: Params) {
       isPartOf: { '@id': WEBSITE_ID },
       mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
       articleSection: category || undefined,
-      keywords: (post.tags || []).map((t) => t.tag).filter(Boolean).join(', ') || undefined,
+      keywords: tags.join(', ') || undefined,
+      wordCount: wordCount || undefined,
+      // The takeaways are the passage most likely to be quoted, so they are
+      // published as the article's abstract as well as rendered on the page.
+      abstract: takeaways.length > 0 ? takeaways.join(' ') : undefined,
+      about: tags.map((tag) => ({ '@type': 'Thing', name: tag })),
       inLanguage: 'en-IN',
       // Tells voice and answer engines which parts are safe to read aloud.
       speakable: {
@@ -113,6 +129,17 @@ export default async function BlogPostPage({ params }: Params) {
             </div>
           ) : null}
 
+          {takeaways.length > 0 ? (
+            <aside className="takeaways" aria-labelledby="takeaways-heading">
+              <h2 id="takeaways-heading">Key takeaways</h2>
+              <ul>
+                {takeaways.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </aside>
+          ) : null}
+
           <RichTextContent data={post.content} />
 
           {faqs.length > 0 ? (
@@ -134,15 +161,46 @@ export default async function BlogPostPage({ params }: Params) {
             </div>
           ) : null}
 
-          {post.tags && post.tags.length > 0 ? (
+          {tags.length > 0 ? (
             <div className="tag-row" style={{ maxWidth: 680, margin: '3rem auto 0' }}>
-              {post.tags.map((t) => (
-                <span key={t.id}>{t.tag}</span>
+              {tags.map((tag) => (
+                <span key={tag}>{tag}</span>
               ))}
+            </div>
+          ) : null}
+
+          {services.length > 0 ? (
+            <div className="article-links" style={{ maxWidth: 680, margin: '3rem auto 0' }}>
+              <h2>How A2S can help with this</h2>
+              <ul>
+                {services.map((service) => (
+                  <li key={service.id}>
+                    <Link href={`/services#${service.id}`}>{service.title}</Link>
+                    <span>{service.short}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : null}
         </div>
       </section>
+
+      {related.length > 0 ? (
+        <section className="section bg-stone" aria-labelledby="related-heading">
+          <div className="container">
+            <div className="section-head">
+              <h2 id="related-heading" className="display" style={{ fontSize: 'var(--text-display-s)' }}>
+                Continue reading
+              </h2>
+            </div>
+            <div className="post-grid">
+              {related.map((item) => (
+                <PostCard key={item.id} post={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="section-tight on-dark deep">
         <div className="container cta-band">

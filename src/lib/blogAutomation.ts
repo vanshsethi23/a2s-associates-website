@@ -42,6 +42,7 @@ type GeneratedArticle = {
   metaDescription: string
   category: string
   tags: string[]
+  keyTakeaways: string[]
   content: Block[]
   faqs: { question: string; answer: string }[]
   imagePrompt: string
@@ -58,6 +59,7 @@ const ARTICLE_SCHEMA = {
     metaDescription: { type: 'string' },
     category: { type: 'string', enum: [...CATEGORY_CHOICES] },
     tags: { type: 'array', items: { type: 'string' } },
+    keyTakeaways: { type: 'array', items: { type: 'string' } },
     content: {
       type: 'array',
       items: {
@@ -88,6 +90,7 @@ const ARTICLE_SCHEMA = {
     'metaDescription',
     'category',
     'tags',
+    'keyTakeaways',
     'content',
     'faqs',
     'imagePrompt',
@@ -134,6 +137,16 @@ STYLE:
   stilt parking, lifts, terrace rights, the paperwork sequence.
 - Close with a short section on what a reader should do next. Do not write a hard sell.
 
+WRITING TO BE QUOTED BY SEARCH AND AI ANSWER ENGINES:
+- Assume any single paragraph may be lifted out and shown on its own. Never open a
+  paragraph with "This", "That" or "It" referring back to the previous paragraph, and
+  never write "as mentioned above" or "in this article".
+- Name the subject explicitly in the first sentence of each section rather than relying
+  on the heading for context. Write "Mutation transfers..." not "It transfers...".
+- Where a term is introduced, define it in the same sentence in plain words.
+- State facts flatly and verifiably. Prefer "A builder floor is one full floor of a
+  low-rise plot" over "Builder floors are considered by many to be...".
+
 ${recentTitles.length > 0 ? `ALREADY PUBLISHED, so choose a clearly different angle and title:\n${recentTitles.map((t) => `- ${t}`).join('\n')}` : ''}
 
 Return JSON only, matching this shape:
@@ -144,6 +157,12 @@ Return JSON only, matching this shape:
 - metaDescription: under 155 characters, written to earn a click from search results.
 - category: exactly one of ${CATEGORY_CHOICES.join(', ')}.
 - tags: 3 to 5 short topical tags, each 1 to 3 words.
+- keyTakeaways: exactly 4 short points, one sentence each, under 140 characters. Each
+  must be a complete, standalone statement of fact that answers part of the title's
+  question and still makes sense read entirely on its own, out of context. These are
+  displayed in a summary box and published as structured data, so they are the most
+  likely part of the page to be quoted by an AI assistant. No fragments, no
+  "Learn more about...", no marketing.
 - content: array of blocks, each { type: "h2" | "h3" | "p", text: "..." }. No markdown
   syntax inside text, no asterisks, no "##". Plain sentences only.
 - faqs: exactly 4 questions a reader would ask about this topic, each answered in 2 to
@@ -249,26 +268,31 @@ export const generateAndPublishPost = async (payload: Payload): Promise<PublishR
   const slug = await uniqueSlug(payload, article.slug || article.title)
   const categoryId = await resolveCategory(payload, article.category)
 
-  // 3. Illustrate it. A failed image must not lose the article, so this is
-  //    tolerated and reported rather than thrown.
+  // 3. Illustrate it, only when asked to. Images are generated and uploaded by
+  //    hand through the admin panel by default, so the writer just leaves a
+  //    brief on the post. A failed image must never lose a finished article, so
+  //    the failure is recorded and the piece publishes without one.
+  const generateImages = process.env.BLOG_AUTOMATION_GENERATE_IMAGES === 'true'
   let featuredImageId: number | undefined
   let imageError: string | undefined
-  try {
-    const image = await generateImage(article.imagePrompt)
-    const media = await payload.create({
-      collection: 'media',
-      data: { alt: article.imageAlt?.slice(0, 200) || article.title },
-      file: {
-        data: image.buffer,
-        mimetype: image.mimeType,
-        name: `${slug}.${image.extension}`,
-        size: image.buffer.length,
-      },
-      overrideAccess: true,
-    })
-    featuredImageId = media.id as number
-  } catch (err) {
-    imageError = err instanceof Error ? err.message : String(err)
+  if (generateImages) {
+    try {
+      const image = await generateImage(article.imagePrompt)
+      const media = await payload.create({
+        collection: 'media',
+        data: { alt: article.imageAlt?.slice(0, 200) || article.title },
+        file: {
+          data: image.buffer,
+          mimetype: image.mimeType,
+          name: `${slug}.${image.extension}`,
+          size: image.buffer.length,
+        },
+        overrideAccess: true,
+      })
+      featuredImageId = media.id as number
+    } catch (err) {
+      imageError = err instanceof Error ? err.message : String(err)
+    }
   }
 
   // 4. Publish (or hold as a draft when review mode is on).
@@ -284,6 +308,10 @@ export const generateAndPublishPost = async (payload: Payload): Promise<PublishR
       publishedDate: new Date().toISOString(),
       category: categoryId,
       featuredImage: featuredImageId,
+      imageBrief: article.imagePrompt,
+      keyTakeaways: (article.keyTakeaways || [])
+        .slice(0, 4)
+        .map((point) => ({ point: point.slice(0, 200) })),
       content: toLexical(article.content),
       faqs: (article.faqs || []).slice(0, 6).map((f) => ({ question: f.question, answer: f.answer })),
       tags: (article.tags || []).slice(0, 5).map((tag) => ({ tag })),

@@ -13,7 +13,9 @@ export function PostCard({ post }: { post: Post }) {
 
   return (
     <Link href={`/blog/${post.slug}`} className="post-card">
-      <span className="post-card-media">
+      {/* Articles publish before their image is added by hand, so the empty
+          state is a deliberate brand panel rather than a blank grey box. */}
+      <span className={`post-card-media${url ? '' : ' is-empty'}`}>
         {url ? (
           <Image
             src={url}
@@ -22,7 +24,16 @@ export function PostCard({ post }: { post: Post }) {
             height={img?.sizes?.card?.height || 600}
             sizes="(max-width: 560px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
-        ) : null}
+        ) : (
+          <Image
+            src="/brand/logo-mark-dark.png"
+            alt=""
+            width={512}
+            height={512}
+            aria-hidden="true"
+            className="post-card-mark"
+          />
+        )}
       </span>
       <span className="post-card-meta">
         {category ? <span className="cat">{category}</span> : null}

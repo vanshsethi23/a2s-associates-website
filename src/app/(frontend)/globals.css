@@ -1427,6 +1427,102 @@ a.service-row:hover h3 {
   color: var(--text-faint);
 }
 
+/* --- article: key takeaways, internal links, empty media ------------------ */
+
+.takeaways {
+  max-width: 680px;
+  margin: 0 auto 2.6rem;
+  padding: 1.8rem 2rem;
+  background: var(--stone);
+  border-left: 2px solid var(--brass);
+  border-radius: var(--radius);
+}
+
+.takeaways h2 {
+  font-family: var(--font-mono-stack);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brass-strong);
+  margin-bottom: 1rem;
+}
+
+.takeaways ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.takeaways li {
+  color: var(--text-strong);
+  line-height: 1.55;
+}
+
+.takeaways li::marker {
+  color: var(--brass);
+}
+
+.article-links h2 {
+  font-family: var(--font-display-stack);
+  font-weight: 430;
+  font-size: 1.3rem;
+  color: var(--text-strong);
+  margin-bottom: 1.1rem;
+}
+
+.article-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-light);
+}
+
+.article-links li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.article-links a {
+  font-family: var(--font-display-stack);
+  font-weight: 420;
+  font-size: 1.05rem;
+  color: var(--brass-strong);
+}
+
+.article-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-links span {
+  font-size: var(--text-small);
+  color: var(--text-faint);
+}
+
+/* card media with no photograph yet */
+.post-card-media.is-empty {
+  display: grid;
+  place-items: center;
+  background: var(--ink-deep);
+}
+
+.post-card-media.is-empty .post-card-mark {
+  width: 30%;
+  height: auto;
+  opacity: 0.38;
+  transition: opacity 0.5s var(--ease-out);
+}
+
+.post-card:hover .post-card-media.is-empty .post-card-mark {
+  opacity: 0.55;
+}
+
 /* --- FAQ accordion -------------------------------------------------------- */
 
 .faq-list {

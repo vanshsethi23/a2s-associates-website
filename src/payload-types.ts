@@ -345,11 +345,27 @@ export interface Post {
   title: string;
   category?: (number | null) | Category;
   publishedDate?: string | null;
+  /**
+   * The lead image, shown on cards and at the top of the article. Articles without one still publish, but adding an image makes the page eligible for image-rich search results.
+   */
   featuredImage?: (number | null) | Media;
+  /**
+   * Written by the automatic writer as a starting point for the featured image. Paste it into your image tool, then upload the result above. Internal only: never shown on the website.
+   */
+  imageBrief?: string | null;
   /**
    * A one or two sentence summary shown on listing cards.
    */
   excerpt?: string | null;
+  /**
+   * Three or four short, self-contained points shown in a summary box at the top of the article. Search and AI answer engines quote these directly, so each one should make sense on its own, without the surrounding article.
+   */
+  keyTakeaways?:
+    | {
+        point: string;
+        id?: string | null;
+      }[]
+    | null;
   content: {
     root: {
       type: string;
@@ -663,7 +679,14 @@ export interface PostsSelect<T extends boolean = true> {
   category?: T;
   publishedDate?: T;
   featuredImage?: T;
+  imageBrief?: T;
   excerpt?: T;
+  keyTakeaways?:
+    | T
+    | {
+        point?: T;
+        id?: T;
+      };
   content?: T;
   faqs?:
     | T

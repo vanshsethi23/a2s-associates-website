@@ -19,8 +19,9 @@ site and the admin panel deploy together.
   speakable ranges, and FAQPage on Services and every generated article.
   `sitemap.xml`, `robots.txt` that explicitly admits AI crawlers, and an
   `/llms.txt` summary generated from live content.
-- **Automated blog** — Gemini writes and illustrates one article every Monday
-  and Saturday, from a topic queue the team controls in the CMS.
+- **Automated blog** — Gemini writes one article every Monday and Saturday from
+  a topic queue the team controls in the CMS, each with key takeaways, FAQs and
+  internal links built for answer engines. Images are added by hand in `/admin`.
 - **Design system** — brand palette (Ink Charcoal, Warm Stone, Brass, Slate, Bone)
   and self-hosted brand type (Fraunces, IBM Plex Sans/Mono) extracted from the
   supplied brand kit.
@@ -65,8 +66,9 @@ Everything the A2S team needs day-to-day lives at `/admin`:
   cover photograph, drag-to-reorder gallery, floor plans (image or PDF), video link
   or upload, SEO tab, and a "feature on the home page" toggle. Save Draft keeps a
   listing off the site; Publish makes it live. Pages revalidate automatically.
-- **Blog posts** — title, category, featured image, excerpt, rich-text content,
-  author, tags, publish date, SEO tab.
+- **Blog posts** — title, category, featured image, suggested image brief,
+  excerpt, key takeaways, rich-text content, FAQs, author, tags, publish date,
+  SEO tab.
 - **Enquiries** — every contact-form submission lands here with a status
   (New / Contacted / Closed) and private notes.
 - **Site Settings** — address, phone, email, WhatsApp, office hours, map embed,
@@ -198,6 +200,7 @@ IST**, then publishes it.
    | `GEMINI_TEXT_MODEL` | Optional override, default `gemini-2.5-flash`. |
    | `GEMINI_IMAGE_MODEL` | Optional override, default `gemini-2.5-flash-image`. |
    | `BLOG_AUTOMATION_REVIEW_MODE` | `true` saves drafts instead of publishing. |
+   | `BLOG_AUTOMATION_GENERATE_IMAGES` | `true` lets Gemini make the images. Off by default. |
 
    Model IDs are configurable because Google renames and retires them. If a run
    fails with a 404 from Gemini, set the current ID rather than editing code.
@@ -216,6 +219,22 @@ IST**, then publishes it.
    - **Anywhere else**: enable `.github/workflows/publish-blog-post.yml` and add
      `SITE_URL` and `CRON_SECRET` as repository secrets.
 
+### Featured images
+
+Images are added by hand, so no image API quota or billing is needed. Each
+generated article arrives with a **suggested image brief** written for it: open
+the post in `/admin`, copy that brief into whichever image tool you use, and
+upload the result into Featured Image. Articles publish without waiting for
+this and show a branded placeholder on listing cards until an image is added,
+so nothing looks broken in the meantime. The Posts list shows the image column,
+so it is easy to see which articles still need one.
+
+Adding an image also makes the article eligible for image-rich search results,
+so it is worth doing within a day or two of publication.
+
+To hand this back to Gemini later, set `BLOG_AUTOMATION_GENERATE_IMAGES=true`
+and enable billing on the Cloud project behind the API key.
+
 ### Steering what gets written
 
 The **Blog topics** collection in the admin is the queue. Add a topic, and
@@ -225,6 +244,15 @@ queue is empty the writer falls back to its own pool of South Delhi property
 topics, so the schedule never misses.
 
 ### Editorial guardrails
+
+Every generated article is built for search, answer and generative engines:
+four standalone **key takeaways** in a summary box (the passage most likely to
+be quoted by an AI assistant, also published as the article's `abstract`), four
+self-contained **FAQ** answers as `FAQPage` markup, `Article` markup with word
+count and topic entities, and automatic internal links to the relevant service
+pages and related articles. The writer is instructed to keep every paragraph
+quotable on its own, with no "as mentioned above" references that break when a
+single passage is lifted out.
 
 The writer's brief (in `src/lib/blogAutomation.ts`) forbids invented
 statistics, prices, dates and study findings; invented facts about A2S such as
