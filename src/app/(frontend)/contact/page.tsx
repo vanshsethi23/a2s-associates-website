@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { EnquiryForm } from '@/components/EnquiryForm'
 import { Reveal } from '@/components/Reveal'
+import { phoneNumbers, telHref } from '@/lib/contact'
 import { getSiteSettings } from '@/lib/data'
 
 export const revalidate = 3600
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 
 export default async function ContactPage() {
   const settings = await getSiteSettings()
+  const address = settings.address
+  const phones = phoneNumbers(settings)
 
   return (
     <>
@@ -40,18 +43,20 @@ export default async function ContactPage() {
               </h2>
             </Reveal>
             <div className="contact-list">
-              {settings.address ? (
+              {address ? (
                 <div className="contact-item">
                   <span className="k">Address</span>
-                  <span className="v">{settings.address}</span>
+                  <span className="v">{address}</span>
                 </div>
               ) : null}
-              {settings.phone ? (
+              {phones.length > 0 ? (
                 <div className="contact-item">
-                  <span className="k">Phone</span>
-                  <a className="v" href={`tel:${settings.phone.replace(/\s/g, '')}`}>
-                    {settings.phone}
-                  </a>
+                  <span className="k">{phones.length > 1 ? 'Phone numbers' : 'Phone'}</span>
+                  {phones.map((number) => (
+                    <a key={number} className="v" href={telHref(number)}>
+                      {number}
+                    </a>
+                  ))}
                 </div>
               ) : null}
               {settings.email ? (

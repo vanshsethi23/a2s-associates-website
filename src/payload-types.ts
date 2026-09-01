@@ -804,13 +804,17 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface SiteSetting {
   id: number;
   /**
-   * The office address, shown in Reach Us and the footer.
+   * The full address as it should read on the site, e.g. I-9, Basement (Cabin No. 1), Lajpat Nagar - 1, New Delhi - 110024
    */
   address?: string | null;
   /**
-   * e.g. +91 98XXX XXXXX
+   * The main number, e.g. +91-9891821130
    */
   phone?: string | null;
+  /**
+   * Optional. Shown alongside the main number.
+   */
+  phoneSecondary?: string | null;
   email?: string | null;
   /**
    * Digits only with country code, e.g. 919812345678. Leave blank to hide the WhatsApp link.
@@ -846,6 +850,7 @@ export interface SiteSetting {
 export interface SiteSettingsSelect<T extends boolean = true> {
   address?: T;
   phone?: T;
+  phoneSecondary?: T;
   email?: T;
   whatsapp?: T;
   officeHours?: T;

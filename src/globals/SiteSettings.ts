@@ -26,16 +26,31 @@ export const SiteSettings: GlobalConfig = {
           fields: [
             {
               name: 'address',
+              label: 'Office address',
               type: 'textarea',
-              admin: { description: 'The office address, shown in Reach Us and the footer.' },
+              admin: {
+                description:
+                  'The full address as it should read on the site, e.g. I-9, Basement (Cabin No. 1), Lajpat Nagar - 1, New Delhi - 110024',
+              },
             },
             {
               type: 'row',
               fields: [
-                { name: 'phone', type: 'text', admin: { width: '50%', description: 'e.g. +91 98XXX XXXXX' } },
-                { name: 'email', type: 'text', admin: { width: '50%' } },
+                {
+                  name: 'phone',
+                  label: 'Phone number',
+                  type: 'text',
+                  admin: { width: '50%', description: 'The main number, e.g. +91-9891821130' },
+                },
+                {
+                  name: 'phoneSecondary',
+                  label: 'Second phone number',
+                  type: 'text',
+                  admin: { width: '50%', description: 'Optional. Shown alongside the main number.' },
+                },
               ],
             },
+            { name: 'email', type: 'text' },
             {
               name: 'whatsapp',
               label: 'WhatsApp number',

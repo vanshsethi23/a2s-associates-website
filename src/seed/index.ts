@@ -2,9 +2,8 @@
  * Seed script: creates the first admin user, site settings and sample
  * content so the site renders fully on first run.
  *
- * ALL PROPERTY LISTINGS AND CONTACT DETAILS SEEDED HERE ARE SAMPLE /
- * PLACEHOLDER CONTENT. Replace them through the admin panel (/admin)
- * before going live.
+ * Contact details are the firm's real ones (see ./contact.ts). The PROPERTY
+ * LISTINGS remain sample content: replace them through /admin before launch.
  *
  * Run with: npm run seed
  */
@@ -12,6 +11,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+
+import { CONTACT_DETAILS } from './contact'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const assets = path.resolve(dirname, '../../seed-assets')
@@ -107,11 +108,7 @@ const run = async (): Promise<void> => {
   await payload.updateGlobal({
     slug: 'site-settings',
     data: {
-      // PLACEHOLDERS: replace with the firm's real details in /admin -> Site Settings.
-      address: 'Office address to be supplied · South Delhi, New Delhi 110048',
-      phone: '+91 00000 00000',
-      email: 'hello@a2sestates.in',
-      officeHours: 'Mon to Sat · 10:00 to 19:00',
+      ...CONTACT_DETAILS,
       copyrightName: 'A2S Estates',
       consentText:
         'I agree to be contacted by A2S Estates by phone, WhatsApp or email about my enquiry, and I accept the Privacy Policy.',

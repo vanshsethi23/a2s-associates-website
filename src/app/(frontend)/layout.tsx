@@ -3,6 +3,7 @@ import React from 'react'
 
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
+import { phoneNumbers } from '@/lib/contact'
 import { getSiteSettings } from '@/lib/data'
 import { fraunces, plexMono, plexSans } from '@/lib/fonts'
 
@@ -49,7 +50,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <Header phone={settings.phone} email={settings.email} />
+        <Header phones={phoneNumbers(settings)} email={settings.email} />
         <main id="main">{children}</main>
         <Footer settings={settings} />
       </body>

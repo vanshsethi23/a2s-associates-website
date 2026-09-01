@@ -1,7 +1,7 @@
 {
   "name": "a2s-estates",
   "version": "1.0.0",
-  "description": "A2S Estates — South Delhi luxury real estate",
+  "description": "A2S Estates \u2014 South Delhi luxury real estate",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
@@ -19,7 +19,8 @@
     "seed": "tsx --env-file=.env src/seed/index.ts",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
-    "build:deploy": "npm run migrate && npm run build"
+    "build:deploy": "npm run migrate && npm run build",
+    "seed:contact": "tsx --env-file=.env src/seed/updateContact.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.88.0",

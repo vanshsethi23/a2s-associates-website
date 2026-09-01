@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { phoneNumbers, telHref } from '@/lib/contact'
 import type { SiteSetting } from '@/payload-types'
 
 const QUICK_LINKS = [
@@ -23,6 +24,8 @@ const EXPLORE = [
 export function Footer({ settings }: { settings: SiteSetting }) {
   const year = new Date().getFullYear()
   const name = settings.copyrightName || 'A2S Estates'
+  const address = settings.address
+  const phones = phoneNumbers(settings)
   return (
     <footer className="site-footer">
       <div className="container">
@@ -65,18 +68,18 @@ export function Footer({ settings }: { settings: SiteSetting }) {
           <div className="footer-col">
             <h3>Reach Us</h3>
             <address>
-              {settings.address ? (
+              {address ? (
                 <>
-                  {settings.address}
+                  {address}
                   <br />
                 </>
               ) : null}
-              {settings.phone ? (
-                <>
-                  <a href={`tel:${settings.phone.replace(/\s/g, '')}`}>{settings.phone}</a>
+              {phones.map((number) => (
+                <span key={number}>
+                  <a href={telHref(number)}>{number}</a>
                   <br />
-                </>
-              ) : null}
+                </span>
+              ))}
               {settings.email ? <a href={`mailto:${settings.email}`}>{settings.email}</a> : null}
               {settings.officeHours ? (
                 <>

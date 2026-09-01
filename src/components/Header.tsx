@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { telHref } from '@/lib/contact'
+
 const LINKS = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About Us' },
@@ -14,7 +16,7 @@ const LINKS = [
   { href: '/contact', label: 'Contact' },
 ]
 
-export function Header({ phone, email }: { phone?: string | null; email?: string | null }) {
+export function Header({ phones = [], email }: { phones?: string[]; email?: string | null }) {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
@@ -108,7 +110,11 @@ export function Header({ phone, email }: { phone?: string | null; email?: string
           ))}
         </nav>
         <div className="mobile-menu-contact">
-          {phone ? <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a> : null}
+          {phones.map((number) => (
+            <a key={number} href={telHref(number)}>
+              {number}
+            </a>
+          ))}
           {email ? <a href={`mailto:${email}`}>{email}</a> : null}
         </div>
       </div>

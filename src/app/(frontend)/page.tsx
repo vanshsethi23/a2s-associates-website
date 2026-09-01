@@ -5,6 +5,7 @@ import { CinematicHero } from '@/components/CinematicHero'
 import { PostCard } from '@/components/PostCard'
 import { PropertyCard } from '@/components/PropertyCard'
 import { Reveal } from '@/components/Reveal'
+import { phoneNumbers, postalAddressJsonLd, primaryPhone, telHref } from '@/lib/contact'
 import { getFeaturedProperties, getPosts, getSiteSettings } from '@/lib/data'
 import { SERVICES } from '@/lib/services'
 
@@ -42,11 +43,10 @@ export default async function HomePage() {
     name: 'A2S Estates',
     slogan: 'Ambition to Success',
     areaServed: 'South Delhi, New Delhi, India',
-    telephone: settings.phone || undefined,
+    telephone: phoneNumbers(settings),
     email: settings.email || undefined,
-    address: settings.address
-      ? { '@type': 'PostalAddress', streetAddress: settings.address, addressRegion: 'Delhi', addressCountry: 'IN' }
-      : undefined,
+    address: postalAddressJsonLd(settings),
+    openingHours: settings.officeHours || undefined,
   }
 
   return (
@@ -217,9 +217,12 @@ export default async function HomePage() {
               <Link href="/contact#enquiry" className="btn btn-primary">
                 Get in touch
               </Link>
-              {settings.phone ? (
-                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} style={{ fontFamily: 'var(--font-mono-stack)', fontSize: '0.875rem', color: 'var(--text-inv-body)' }}>
-                  {settings.phone}
+              {primaryPhone(settings) ? (
+                <a
+                  href={telHref(primaryPhone(settings)!)}
+                  style={{ fontFamily: 'var(--font-mono-stack)', fontSize: '0.875rem', color: 'var(--text-inv-body)' }}
+                >
+                  {primaryPhone(settings)}
                 </a>
               ) : null}
             </div>

@@ -132,19 +132,26 @@ schedule — those two files are the entire site's content.
 | Plain S3 / Cloudflare Pages (static mode) | Same reason. |
 | Any host without persistent storage, using SQLite | The database file resets on every deploy. Use Postgres there. |
 
-## Placeholder content — replace before launch
+## Content status
 
-All of the following was seeded as clearly-labelled sample content and must be
-replaced with real information via `/admin`:
+**Live and approved:**
 
-- **All six property listings** (sample data; images are stills from the
-  walkthrough film).
-- **Site Settings → Contact**: address, phone `+91 00000 00000`, email.
-- **Consent text**: the brief's original checkbox text referenced **"Rana Infra"**,
-  which does not match the A2S Estates brand; it has been rewritten for
-  A2S Estates and needs sign-off (Site Settings → Legal & consent).
-- **Privacy Policy and Terms & Conditions** pages are working drafts for counsel review.
-- Blog posts are generic evergreen guides; review before publishing more widely.
+- Office address, phone numbers, email and hours (Site Settings).
+- Privacy Policy and Terms & Conditions, approved by A2S Estates and indexable.
+
+**Still sample content — replace via `/admin` before launch:**
+
+- **All six property listings.** Sample data; the photographs are stills from
+  the walkthrough film, not the actual properties.
+- **Blog posts.** Three evergreen guides, accurate but generic. Review before
+  promoting them.
+- **Consent text.** The brief originally supplied wording naming "Rana Infra",
+  which is not the A2S Estates brand; it was rewritten for A2S Estates and is
+  editable at Site Settings → Legal & consent.
+
+Contact details live in the CMS. `src/seed/contact.ts` holds the official
+values so a fresh database starts correct, and `npm run seed:contact` restores
+them to an existing database without touching properties, posts or enquiries.
 
 ## Hero film pipeline
 
@@ -168,6 +175,7 @@ as fractions of the film; retune them to the new footage.
 | `npm run dev` | Dev server |
 | `npm run build` / `start` | Production build / serve |
 | `npm run seed` | First admin user + sample content |
+| `npm run seed:contact` | Restore the official contact details in Site Settings |
 | `npm run generate:types` | Regenerate `src/payload-types.ts` after schema changes |
 | `npm run migrate:create` | Generate a Postgres migration (production only) |
 | `npm run build:deploy` | Run migrations, then build. Use as the host's build command. |
