@@ -31,11 +31,30 @@ export const databaseAdapter = isPostgres
  */
 export const storagePlugins: Plugin[] = []
 
-if (process.env.BLOB_READ_WRITE_TOKEN) {
+/**
+ * Vercel names the Blob token BLOB_READ_WRITE_TOKEN by default, but a store
+ * connected under a custom prefix arrives as <PREFIX>_READ_WRITE_TOKEN. Missing
+ * it would silently fall through to local disk, so any variable holding a
+ * recognisable Blob token counts. The adapter rejects malformed tokens, hence
+ * matching on the value's shape rather than trusting the name alone.
+ */
+const blobToken = (): string | undefined => {
+  const direct = process.env.BLOB_READ_WRITE_TOKEN?.trim()
+  if (direct) return direct
+
+  const match = Object.entries(process.env).find(
+    ([key, value]) => key.endsWith('_READ_WRITE_TOKEN') && /^vercel_blob_rw_/i.test(value?.trim() || ''),
+  )
+  return match?.[1]?.trim()
+}
+
+const vercelBlobToken = blobToken()
+
+if (vercelBlobToken) {
   storagePlugins.push(
     vercelBlobStorage({
       collections: { media: true },
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: vercelBlobToken,
     }),
   )
 } else if (process.env.S3_BUCKET) {
@@ -59,3 +78,15 @@ if (process.env.BLOB_READ_WRITE_TOKEN) {
 
 /** True when uploads land on the local disk, i.e. they are not deploy-safe. */
 export const usingLocalDiskStorage = storagePlugins.length === 0
+
+/**
+ * On Vercel the local disk is discarded after every deploy, so this state loses
+ * every uploaded image without any error at the point of upload. It is only
+ * noticed later, as broken images on the live site, so say so loudly here.
+ */
+if (usingLocalDiskStorage && process.env.VERCEL) {
+  console.warn(
+    '[storage] No object storage configured: uploads will be written to disk and lost on the next deploy. ' +
+      'Connect a Vercel Blob store (sets BLOB_READ_WRITE_TOKEN) or set S3_BUCKET. See README "Deployment".',
+  )
+}
