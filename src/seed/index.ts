@@ -61,7 +61,52 @@ const rt = (blocks: (string | Para)[]) => ({
   },
 })
 
+/**
+ * `vercel env pull` writes "[SENSITIVE]" in place of any variable marked
+ * Sensitive in the dashboard, because those values cannot be read back. Left
+ * unreplaced, DATABASE_URL falls through to the SQLite default and the seed
+ * quietly fills the local database while appearing to succeed, leaving the
+ * live site as empty as before. Fail here instead, and say which value to fix.
+ */
+const preflightError = (): string | undefined => {
+  const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || ''
+  const unresolved = ['DATABASE_URL', 'PAYLOAD_SECRET', 'BLOB_READ_WRITE_TOKEN'].filter((key) =>
+    (process.env[key] || '').includes('[SENSITIVE]'),
+  )
+
+  if (unresolved.length > 0) {
+    return (
+      `Refusing to seed: ${unresolved.join(', ')} ${unresolved.length > 1 ? 'still hold' : 'still holds'} ` +
+      'the "[SENSITIVE]" placeholder that\n' +
+      '`vercel env pull` writes for values it cannot read back. Replace each one in\n' +
+      '.env.production.local with the real value before running this again.'
+    )
+  }
+
+  if (!/^postgres(ql)?:\/\//.test(dbUrl)) {
+    return (
+      `Refusing to seed: DATABASE_URL is "${dbUrl || '(unset)'}", which is not a Postgres URL.\n` +
+      'Seeding production expects the Neon postgres:// string. Use `npm run seed` if you\n' +
+      'meant to seed the local SQLite database instead.'
+    )
+  }
+
+  return undefined
+}
+
 const run = async (): Promise<void> => {
+  if (process.env.SEED_TARGET === 'remote') {
+    const error = preflightError()
+    if (error) {
+      console.error(error)
+      // Setting the code and returning lets Node flush stderr before exiting.
+      // process.exit() here truncates the message whenever output is piped or
+      // redirected, which is exactly when someone is capturing it to read.
+      process.exitCode = 1
+      return
+    }
+  }
+
   const payload = await getPayload({ config })
 
   const existing = await payload.find({ collection: 'users', limit: 1 })
