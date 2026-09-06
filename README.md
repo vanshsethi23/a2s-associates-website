@@ -118,16 +118,34 @@ admin writes and the contact form.
 
 6. **Deploy.** The build runs the migration and creates the tables.
 
-7. **Create the first admin user and starter content.** Once, from your own
-   machine with `DATABASE_URL` temporarily pointed at Neon:
+7. **Create the first admin user and starter content.** The migration in step 6
+   creates empty tables, so until this runs the live site has no properties, no
+   blog posts and nobody who can log in. Run it once, from your own machine,
+   against the production environment:
 
    ```bash
-   npm run seed
+   npm i -g vercel
+   vercel login
+   vercel link
+   vercel env pull .env.production.local --environment=production
+   npm run seed:remote
    ```
 
-   Then put your local `.env` back to `file:./a2s.db`. Log in at
-   `/admin`, change the password immediately, and check Site Settings shows the
-   right contact details.
+   `vercel env pull` writes the real production values (Neon `DATABASE_URL`,
+   `PAYLOAD_SECRET`, `BLOB_READ_WRITE_TOKEN`) to a gitignored file, and
+   `seed:remote` reads that file instead of your local `.env`, so nothing about
+   your local SQLite setup changes and there is no connection string to paste
+   by hand. Do step 5 first: without `BLOB_READ_WRITE_TOKEN` the seed writes its
+   images to your laptop while creating the rows in production, and the live
+   site shows broken images.
+
+   Set `PAYLOAD_ADMIN_EMAIL` and `PAYLOAD_ADMIN_PASSWORD` in
+   `.env.production.local` before running, or the first user is created with
+   the defaults from `.env.example` and must be changed straight away.
+
+   The seed is safe to re-run: it exits with `Seed skipped: users already exist.`
+   rather than duplicating content. Afterwards, log in at `/admin` and check
+   Site Settings shows the right contact details.
 
 8. **Domain.** Settings → Domains, add the domain and point DNS at the records
    shown. Then set `NEXT_PUBLIC_SERVER_URL` to that domain and redeploy, so
