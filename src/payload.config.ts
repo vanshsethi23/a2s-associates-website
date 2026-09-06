@@ -18,7 +18,24 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const isProduction = process.env.NODE_ENV === 'production'
-const publicURL = process.env.NEXT_PUBLIC_SERVER_URL || ''
+
+/**
+ * Vercel's dashboard lists domains without a scheme, so NEXT_PUBLIC_SERVER_URL
+ * is easily set to a bare hostname. Payload parses serverURL with `new URL()`,
+ * so an unparseable value is discarded rather than passed through.
+ */
+const normaliseOrigin = (value?: string): string => {
+  const trimmed = value?.trim().replace(/\/+$/, '')
+  if (!trimmed) return ''
+  const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  try {
+    return new URL(candidate).origin
+  } catch {
+    return ''
+  }
+}
+
+const publicURL = normaliseOrigin(process.env.NEXT_PUBLIC_SERVER_URL)
 
 /**
  * Every origin the admin panel is legitimately reached from.

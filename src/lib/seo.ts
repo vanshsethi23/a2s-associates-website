@@ -1,7 +1,40 @@
 import { phoneNumbers, postalAddressJsonLd } from '@/lib/contact'
 import type { SiteSetting } from '@/payload-types'
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').replace(/\/$/, '')
+/**
+ * Resolves the canonical origin without ever throwing.
+ *
+ * `new URL()` is unforgiving, and metadataBase runs while Next collects page
+ * configuration, so one malformed value fails the whole build rather than one
+ * page. Vercel's dashboard shows domains without a scheme, so pasting
+ * `a2sestates.vercel.app` into NEXT_PUBLIC_SERVER_URL is an easy mistake: it
+ * is a valid hostname but not a valid URL. Each candidate is therefore given a
+ * scheme if it lacks one and parsed before use, falling back to the hostnames
+ * Vercel injects and finally to localhost.
+ */
+const resolveSiteUrl = (): string => {
+  const candidates = [
+    process.env.NEXT_PUBLIC_SERVER_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+    'http://localhost:3000',
+  ]
+
+  for (const candidate of candidates) {
+    const trimmed = candidate?.trim().replace(/\/+$/, '')
+    if (!trimmed) continue
+    const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    try {
+      return new URL(withScheme).origin
+    } catch {
+      // Try the next candidate rather than taking the build down.
+    }
+  }
+
+  return 'http://localhost:3000'
+}
+
+export const SITE_URL = resolveSiteUrl()
 export const SITE_NAME = 'A2S Estates'
 
 /** Absolute URL for schema.org and social tags, which must not be relative. */

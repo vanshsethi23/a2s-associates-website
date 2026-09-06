@@ -1,8 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 import { getPayloadClient } from '@/lib/data'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+import { SITE_URL } from '@/lib/seo'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayloadClient()
