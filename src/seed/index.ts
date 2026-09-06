@@ -94,6 +94,9 @@ const preflightError = (): string | undefined => {
   return undefined
 }
 
+/** Set once the first row lands, so a failure can say whether cleanup is needed. */
+let hasWritten = false
+
 const run = async (): Promise<void> => {
   if (process.env.SEED_TARGET === 'remote') {
     const error = preflightError()
@@ -124,6 +127,7 @@ const run = async (): Promise<void> => {
       password: process.env.PAYLOAD_ADMIN_PASSWORD || 'a2s-change-me',
     },
   })
+  hasWritten = true
 
   payload.logger.info('Uploading media...')
   const media: Record<string, number> = {}
@@ -467,4 +471,42 @@ const run = async (): Promise<void> => {
   process.exit(0)
 }
 
-void run()
+/**
+ * The seed writes as it goes, so a failure part-way through — a storage adapter
+ * rejecting an upload, say — leaves the admin user created and everything after
+ * it missing. The next run then sees that user, reports "users already exist"
+ * and skips silently, which reads like success. Say plainly what state the
+ * database is in and how to clear it.
+ */
+let reported = false
+
+const reportFailure = (error: unknown): void => {
+  if (reported) return
+  reported = true
+  console.error(error)
+  process.exitCode = 1
+}
+
+/**
+ * Printed on exit rather than beside the error, because Payload's logger keeps
+ * writing the stack asynchronously afterwards and would bury the instructions
+ * under it. This is the part worth reading, so it goes last.
+ */
+process.on('exit', () => {
+  if (!reported) return
+  console.error(
+    hasWritten
+      ? '\nSeed FAILED part-way through. Rows created before the error are still in the\n' +
+          'database, so re-running will stop at "users already exist" and change nothing.\n' +
+          'Clear the partial seed first, then run this again:\n\n' +
+          '  TRUNCATE TABLE users, media RESTART IDENTITY CASCADE;\n\n' +
+          'Run that in the Neon SQL Editor (or any psql session on the same database).'
+      : '\nSeed FAILED before writing anything. The database is unchanged; fix the error above and re-run.',
+  )
+})
+
+// The database pool rejects on its own promise rather than the awaited chain,
+// so a connection failure never reaches the catch below. Cover both paths.
+process.on('unhandledRejection', reportFailure)
+
+void run().catch(reportFailure)
