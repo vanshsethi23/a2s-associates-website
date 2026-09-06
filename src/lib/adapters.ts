@@ -49,35 +49,50 @@ const blobToken = (): string | undefined => {
 }
 
 const vercelBlobToken = blobToken()
+const useVercelBlob = Boolean(vercelBlobToken)
+const useS3 = !useVercelBlob && Boolean(process.env.S3_BUCKET)
 
-if (vercelBlobToken) {
-  storagePlugins.push(
-    vercelBlobStorage({
-      collections: { media: true },
-      token: vercelBlobToken,
-    }),
-  )
-} else if (process.env.S3_BUCKET) {
-  storagePlugins.push(
-    s3Storage({
-      collections: { media: true },
-      bucket: process.env.S3_BUCKET,
-      config: {
-        endpoint: process.env.S3_ENDPOINT || undefined,
-        region: process.env.S3_REGION || 'auto',
-        credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-        },
-        // Required by R2, MinIO and most non-AWS S3 implementations.
-        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+/**
+ * Both plugins are ALWAYS registered, with at most one enabled.
+ *
+ * Each registers an admin client component (its upload handler) before it
+ * checks whether it is enabled, so merely including a plugin changes the set of
+ * components the admin panel expects to find in `admin/importMap.js`. Adding a
+ * plugin only when its environment variable is present therefore makes that
+ * generated file environment-dependent: `payload generate:importmap` runs on a
+ * laptop with no storage configured and omits the entry, then production loads
+ * the plugin, asks for a component the map does not contain, and every admin
+ * page renders blank with only a server log to show for it.
+ *
+ * Registering both unconditionally keeps the config shape — and so the
+ * importMap — identical everywhere. A disabled plugin installs no adapter, so
+ * uploads still fall through to local disk exactly as before.
+ */
+storagePlugins.push(
+  vercelBlobStorage({
+    enabled: useVercelBlob,
+    collections: { media: true },
+    token: vercelBlobToken || '',
+  }),
+  s3Storage({
+    enabled: useS3,
+    collections: { media: true },
+    bucket: process.env.S3_BUCKET || '',
+    config: {
+      endpoint: process.env.S3_ENDPOINT || undefined,
+      region: process.env.S3_REGION || 'auto',
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
       },
-    }),
-  )
-}
+      // Required by R2, MinIO and most non-AWS S3 implementations.
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+    },
+  }),
+)
 
 /** True when uploads land on the local disk, i.e. they are not deploy-safe. */
-export const usingLocalDiskStorage = storagePlugins.length === 0
+export const usingLocalDiskStorage = !useVercelBlob && !useS3
 
 /**
  * On Vercel the local disk is discarded after every deploy, so this state loses
