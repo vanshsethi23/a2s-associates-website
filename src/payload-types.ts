@@ -70,7 +70,6 @@ export interface Config {
     properties: Property;
     posts: Post;
     categories: Category;
-    'blog-topics': BlogTopic;
     media: Media;
     enquiries: Enquiry;
     users: User;
@@ -84,7 +83,6 @@ export interface Config {
     properties: PropertiesSelect<false> | PropertiesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
-    'blog-topics': BlogTopicsSelect<false> | BlogTopicsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -350,7 +348,7 @@ export interface Post {
    */
   featuredImage?: (number | null) | Media;
   /**
-   * Written by the automatic writer as a starting point for the featured image. Paste it into your image tool, then upload the result above. Internal only: never shown on the website.
+   * Optional working notes for the featured image — what it should show, who is sourcing it. Internal only: never shown on the website.
    */
   imageBrief?: string | null;
   /**
@@ -427,31 +425,6 @@ export interface Category {
   id: number;
   title: string;
   slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * The queue the automatic writer works through. Add topics you want covered; the next scheduled post (Monday and Saturday) takes the oldest one still marked Queued. If the queue is empty the writer falls back to its own South Delhi property topics, so the site never goes quiet.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog-topics".
- */
-export interface BlogTopic {
-  id: number;
-  /**
-   * e.g. "How stilt parking rights are allocated in a builder floor rebuild"
-   */
-  topic: string;
-  /**
-   * Optional. Anything the article must cover or avoid, in plain English. Passed to the writer as instructions.
-   */
-  angle?: string | null;
-  status?: ('queued' | 'published' | 'skipped') | null;
-  usedAt?: string | null;
-  /**
-   * The article generated from this topic.
-   */
-  post?: (number | null) | Post;
   updatedAt: string;
   createdAt: string;
 }
@@ -544,10 +517,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
-      } | null)
-    | ({
-        relationTo: 'blog-topics';
-        value: number | BlogTopic;
       } | null)
     | ({
         relationTo: 'media';
@@ -721,19 +690,6 @@ export interface PostsSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog-topics_select".
- */
-export interface BlogTopicsSelect<T extends boolean = true> {
-  topic?: T;
-  angle?: T;
-  status?: T;
-  usedAt?: T;
-  post?: T;
   updatedAt?: T;
   createdAt?: T;
 }

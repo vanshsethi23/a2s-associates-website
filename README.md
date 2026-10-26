@@ -104,8 +104,6 @@ admin writes and the contact form.
    | `DATABASE_URL` | The Neon `postgres://…` string |
    | `PAYLOAD_SECRET` | Output of `openssl rand -hex 32` |
    | `NEXT_PUBLIC_SERVER_URL` | `https://your-domain.com` once you have it, otherwise your `.vercel.app` URL |
-   | `GEMINI_API_KEY` | Only if you want the automated blog |
-   | `CRON_SECRET` | Only if you want the automated blog |
 
    You do not need to list the `.vercel.app` hostnames for the admin panel:
    Vercel's own URLs are trusted automatically (see `csrfOrigins` in
@@ -230,105 +228,15 @@ Three overlapping audiences, handled deliberately:
 To check the markup after any content change, paste a URL into Google's Rich
 Results Test and Schema.org's validator.
 
-## Automated blog
+## Blog
 
-Gemini writes and illustrates one article every **Monday and Saturday at 09:00
-IST**, then publishes it.
+Articles are written by hand in `/admin` → **Posts**. Each one supports an
+excerpt, key takeaways, FAQs, tags and per-post SEO fields; the FAQ block is
+what answer engines quote, so it is worth filling in.
 
-### Setup
-
-1. Get a key from [Google AI Studio](https://aistudio.google.com/apikey).
-2. Set on the host (and in `.env` to test locally):
-
-   | Variable | Purpose |
-   | --- | --- |
-   | `GEMINI_API_KEY` | Required. Without it, automation stays off. |
-   | `CRON_SECRET` | Required. `openssl rand -hex 32`. Protects the endpoint. |
-   | `GEMINI_TEXT_MODEL` | Optional override, default `gemini-2.5-flash`. |
-   | `GEMINI_IMAGE_MODEL` | Optional override, default `gemini-2.5-flash-image`. |
-   | `BLOG_AUTOMATION_REVIEW_MODE` | `true` saves drafts instead of publishing. |
-   | `BLOG_AUTOMATION_GENERATE_IMAGES` | `true` lets Gemini make the images. Off by default. |
-
-   Model IDs are configurable because Google renames and retires them. If a run
-   fails with a 404 from Gemini, set the current ID rather than editing code.
-
-3. Test it before trusting the schedule:
-
-   ```bash
-   npm run blog:generate
-   ```
-
-   This writes one real article immediately and prints where it landed, e.g.
-
-   ```
-   Published: Verifying Lift Service Contracts When Buying Top Floors
-   Topic:  How to verify a lift service contract before buying a top floor
-   URL:    /blog/verifying-lift-service-contracts-when-buying-top-floors
-   Image:  none yet. Add one in /admin, using the suggested image brief saved on the post.
-   ```
-
-   Read it at that URL with `npm run dev` running, and open the same post in
-   `/admin` to see the takeaways, FAQs, SEO fields and image brief it produced.
-
-   To test exactly what the scheduler will do, call the endpoint the same way
-   Vercel Cron does, with the dev server running:
-
-   ```bash
-   curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
-     http://localhost:3000/api/cron/publish-post
-   ```
-
-4. Enable **one** scheduler, not both:
-   - **Vercel**: `vercel.json` already declares the cron. Set `CRON_SECRET` in
-     the project and Vercel sends it automatically.
-   - **Anywhere else**: enable `.github/workflows/publish-blog-post.yml` and add
-     `SITE_URL` and `CRON_SECRET` as repository secrets.
-
-### Featured images
-
-Images are added by hand, so no image API quota or billing is needed. Each
-generated article arrives with a **suggested image brief** written for it: open
-the post in `/admin`, copy that brief into whichever image tool you use, and
-upload the result into Featured Image. Articles publish without waiting for
-this and show a branded placeholder on listing cards until an image is added,
-so nothing looks broken in the meantime. The Posts list shows the image column,
-so it is easy to see which articles still need one.
-
-Adding an image also makes the article eligible for image-rich search results,
-so it is worth doing within a day or two of publication.
-
-To hand this back to Gemini later, set `BLOG_AUTOMATION_GENERATE_IMAGES=true`
-and enable billing on the Cloud project behind the API key.
-
-### Steering what gets written
-
-The **Blog topics** collection in the admin is the queue. Add a topic, and
-optionally an angle telling the writer what to cover or avoid; the next
-scheduled run takes the oldest queued topic and marks it published. If the
-queue is empty the writer falls back to its own pool of South Delhi property
-topics, so the schedule never misses.
-
-### Editorial guardrails
-
-Every generated article is built for search, answer and generative engines:
-four standalone **key takeaways** in a summary box (the passage most likely to
-be quoted by an AI assistant, also published as the article's `abstract`), four
-self-contained **FAQ** answers as `FAQPage` markup, `Article` markup with word
-count and topic entities, and automatic internal links to the relevant service
-pages and related articles. The writer is instructed to keep every paragraph
-quotable on its own, with no "as mentioned above" references that break when a
-single passage is lifted out.
-
-The writer's brief (in `src/lib/blogAutomation.ts`) forbids invented
-statistics, prices, dates and study findings; invented facts about A2S such as
-awards, client numbers or testimonials; specific legal provisions, stamp duty
-or tax rates; and any promise about returns or price movement. Each article
-must open with a standalone answer and end with four self-contained FAQ
-answers, which is what answer engines quote.
-
-**These guardrails reduce risk; they do not remove it.** The articles publish
-unreviewed. Set `BLOG_AUTOMATION_REVIEW_MODE=true` to hold them as drafts if
-you would rather approve each one, and read the first few runs either way.
+Automated publishing was removed in favour of manual authoring. It is in the
+git history if it is ever wanted back: it added a Gemini writer, a cron
+endpoint and a Blog Topics queue collection.
 
 ## Hero film pipeline
 
@@ -353,7 +261,6 @@ as fractions of the film; retune them to the new footage.
 | `npm run build` / `start` | Production build / serve |
 | `npm run seed` | First admin user + sample content |
 | `npm run seed:contact` | Restore the official contact details in Site Settings |
-| `npm run blog:generate` | Write and publish one article now (tests the Gemini setup) |
 | `npm run generate:types` | Regenerate `src/payload-types.ts` after schema changes |
 | `npm run migrate:create` | Generate a Postgres migration (production only) |
 | `npm run build:deploy` | Run migrations, then build. Use as the host's build command. |

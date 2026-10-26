@@ -70,11 +70,11 @@ export const Posts: CollectionConfig = {
             },
             {
               name: 'imageBrief',
-              label: 'Suggested image brief',
+              label: 'Image notes',
               type: 'textarea',
               admin: {
                 description:
-                  'Written by the automatic writer as a starting point for the featured image. Paste it into your image tool, then upload the result above. Internal only: never shown on the website.',
+                  'Optional working notes for the featured image — what it should show, who is sourcing it. Internal only: never shown on the website.',
               },
             },
             {
