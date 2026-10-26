@@ -14,3 +14,12 @@ export const CONTACT_DETAILS = {
   officeHours: 'Mon to Sat · 10:00 to 19:00',
   portalUrl: 'https://housing.com/agents/search-A4jvd16ff9e0qye19r4hq79za8',
 }
+
+/**
+ * Kept apart from CONTACT_DETAILS because that object is verified field by
+ * field with a strict comparison after saving, which an array of rows with
+ * database-assigned ids would always fail.
+ */
+export const SOCIAL_LINKS = [
+  { platform: 'Instagram' as const, url: 'https://www.instagram.com/a2sestates.in/' },
+]

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-import { CONTACT_DETAILS } from './contact'
+import { CONTACT_DETAILS, SOCIAL_LINKS } from './contact'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const assets = path.resolve(dirname, '../../seed-assets')
@@ -158,6 +158,7 @@ const run = async (): Promise<void> => {
     slug: 'site-settings',
     data: {
       ...CONTACT_DETAILS,
+      socialLinks: SOCIAL_LINKS,
       copyrightName: 'A2S Estates',
       consentText:
         'I agree to be contacted by A2S Estates by phone, WhatsApp or email about my enquiry, and I accept the Privacy Policy.',

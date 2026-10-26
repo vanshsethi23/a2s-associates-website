@@ -7,11 +7,14 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-import { CONTACT_DETAILS } from './contact'
+import { CONTACT_DETAILS, SOCIAL_LINKS } from './contact'
 
 const run = async (): Promise<void> => {
   const payload = await getPayload({ config })
-  await payload.updateGlobal({ slug: 'site-settings', data: CONTACT_DETAILS })
+  await payload.updateGlobal({
+    slug: 'site-settings',
+    data: { ...CONTACT_DETAILS, socialLinks: SOCIAL_LINKS },
+  })
 
   // Read back: if the database predates a field, Payload drops it silently
   // rather than erroring, which would leave the site showing stale details.

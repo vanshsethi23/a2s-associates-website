@@ -22,7 +22,8 @@
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "db:unblock": "tsx src/scripts/clearDevPushMarker.ts",
     "build:deploy": "npm run db:unblock && npm run migrate && npm run build",
-    "seed:contact": "tsx --env-file=.env src/seed/updateContact.ts"
+    "seed:contact": "tsx --env-file=.env src/seed/updateContact.ts",
+    "seed:contact:remote": "tsx --env-file=.env.production.local src/seed/updateContact.ts"
   },
   "dependencies": {
     "@neon/config": "^1.3.0",

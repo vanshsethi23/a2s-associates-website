@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { SocialLinks } from '@/components/SocialLinks'
 import { phoneNumbers, telHref } from '@/lib/contact'
 import type { SiteSetting } from '@/payload-types'
 
@@ -44,6 +45,7 @@ export function Footer({ settings }: { settings: SiteSetting }) {
               Sale, purchase, renting and collaboration across South Delhi, with turnkey design and
               construction under the same roof.
             </p>
+            <SocialLinks settings={settings} />
           </div>
           <div className="footer-col">
             <h3>Quick Links</h3>

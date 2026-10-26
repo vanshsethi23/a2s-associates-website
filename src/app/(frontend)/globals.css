@@ -1921,6 +1921,36 @@ a.service-row:hover h3 {
   color: var(--text-inv-faint);
 }
 
+.footer-social {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  /* The list reset below only covers .footer-col; this list sits in the
+     brand column, so it needs its own. */
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
+}
+
+.footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  color: var(--text-inv-faint);
+  font-family: var(--font-mono-stack);
+  font-size: 0.6875rem;
+  transition: color 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+}
+
+.footer-social a:hover {
+  color: var(--brass);
+  border-color: var(--brass);
+}
+
 .footer-col h3 {
   font-family: var(--font-mono-stack);
   font-size: var(--text-label);
