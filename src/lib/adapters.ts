@@ -4,6 +4,8 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import type { Plugin } from 'payload'
 
+import { vercelBlobToken } from './blobToken'
+
 /**
  * Database and media storage are chosen from the environment, so the same
  * codebase runs on a laptop (SQLite + local files) and in production
@@ -33,23 +35,12 @@ export const storagePlugins: Plugin[] = []
 
 /**
  * Vercel names the Blob token BLOB_READ_WRITE_TOKEN by default, but a store
- * connected under a custom prefix arrives as <PREFIX>_READ_WRITE_TOKEN. Missing
- * it would silently fall through to local disk, so any variable holding a
- * recognisable Blob token counts. The adapter rejects malformed tokens, hence
- * matching on the value's shape rather than trusting the name alone.
+ * connected under a custom prefix arrives as <PREFIX>_READ_WRITE_TOKEN. The
+ * lookup lives in blobToken.ts because next.config.ts has to reach the same
+ * answer for next/image's remotePatterns.
  */
-const blobToken = (): string | undefined => {
-  const direct = process.env.BLOB_READ_WRITE_TOKEN?.trim()
-  if (direct) return direct
-
-  const match = Object.entries(process.env).find(
-    ([key, value]) => key.endsWith('_READ_WRITE_TOKEN') && /^vercel_blob_rw_/i.test(value?.trim() || ''),
-  )
-  return match?.[1]?.trim()
-}
-
-const vercelBlobToken = blobToken()
-const useVercelBlob = Boolean(vercelBlobToken)
+const vercelBlobTokenValue = vercelBlobToken()
+const useVercelBlob = Boolean(vercelBlobTokenValue)
 const useS3 = !useVercelBlob && Boolean(process.env.S3_BUCKET)
 
 /**
@@ -72,7 +63,7 @@ storagePlugins.push(
   vercelBlobStorage({
     enabled: useVercelBlob,
     collections: { media: true },
-    token: vercelBlobToken || '',
+    token: vercelBlobTokenValue || '',
   }),
   s3Storage({
     enabled: useS3,
