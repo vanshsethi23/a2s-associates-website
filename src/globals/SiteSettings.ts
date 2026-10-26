@@ -64,6 +64,15 @@ export const SiteSettings: GlobalConfig = {
               type: 'text',
               admin: { description: 'Optional. From Google Maps: Share, Embed a map, copy only the src link.' },
             },
+            {
+              name: 'portalUrl',
+              label: 'Housing.com profile link',
+              type: 'text',
+              admin: {
+                description:
+                  'Optional. The full link to the firm’s agent profile. When set, a button on the All Property page sends visitors there to see the wider set of listings. Leave blank to hide the button.',
+              },
+            },
           ],
         },
         {

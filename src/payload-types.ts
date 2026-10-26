@@ -869,6 +869,10 @@ export interface SiteSetting {
    */
   mapEmbedUrl?: string | null;
   /**
+   * Optional. The full link to the firm’s agent profile. When set, a button on the All Property page sends visitors there to see the wider set of listings. Leave blank to hide the button.
+   */
+  portalUrl?: string | null;
+  /**
    * NOTE: the original brief supplied consent text that referred to "Rana Infra", which does not match the A2S Estates brand. It has been rewritten for A2S Estates. Replace this with your legally approved wording.
    */
   consentText?: string | null;
@@ -895,6 +899,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   whatsapp?: T;
   officeHours?: T;
   mapEmbedUrl?: T;
+  portalUrl?: T;
   consentText?: T;
   copyrightName?: T;
   socialLinks?:

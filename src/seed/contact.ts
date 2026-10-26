@@ -12,4 +12,5 @@ export const CONTACT_DETAILS = {
   phoneSecondary: '+91-9999893722',
   email: 'a2sestates.in@gmail.com',
   officeHours: 'Mon to Sat · 10:00 to 19:00',
+  portalUrl: 'https://housing.com/agents/search-A4jvd16ff9e0qye19r4hq79za8',
 }
