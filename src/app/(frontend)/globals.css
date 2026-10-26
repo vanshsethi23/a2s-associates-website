@@ -1138,6 +1138,14 @@ a.service-row:hover h3 {
   max-width: 24ch;
 }
 
+/* Lets a CTA band carry a second action without breaking its two-part layout. */
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: center;
+}
+
 /* --- property detail ----------------------------------------------------- */
 
 .prop-hero {

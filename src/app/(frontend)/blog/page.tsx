@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PortalBand } from '@/components/PortalCta'
 import Link from 'next/link'
 
 import { PostCard } from '@/components/PostCard'
@@ -65,6 +66,8 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           ) : null}
         </div>
       </section>
+
+      <PortalBand heading="Reading up before you buy? See what is currently available." />
     </>
   )
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PortalLink } from '@/components/PortalCta'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -207,9 +208,12 @@ export default async function BlogPostPage({ params }: Params) {
           <h2 className="display inv" style={{ fontSize: 'var(--text-display-s)' }}>
             A question this piece did not answer?
           </h2>
-          <Link href="/contact#enquiry" className="btn btn-primary">
-            Get in touch
-          </Link>
+          <div className="cta-actions">
+            <Link href="/contact#enquiry" className="btn btn-primary">
+              Get in touch
+            </Link>
+            <PortalLink />
+          </div>
         </div>
       </section>
     </article>

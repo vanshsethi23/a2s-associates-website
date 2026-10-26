@@ -3,7 +3,8 @@ import Link from 'next/link'
 
 import { PropertyCard } from '@/components/PropertyCard'
 import { Reveal } from '@/components/Reveal'
-import { getProperties, getSiteSettings } from '@/lib/data'
+import { PortalBand } from '@/components/PortalCta'
+import { getProperties } from '@/lib/data'
 
 export const revalidate = 3600
 
@@ -30,12 +31,8 @@ export default async function PropertiesPage({
 }) {
   const params = await searchParams
   const page = Math.max(1, Number(params.page) || 1)
-  const [result, settings] = await Promise.all([
-    getProperties({ type: params.type, locality: params.locality, page, limit: 12 }),
-    getSiteSettings(),
-  ])
+  const result = await getProperties({ type: params.type, locality: params.locality, page, limit: 12 })
   const localityLabel = params.locality ? params.locality.replace(/-/g, ' ') : null
-  const portalUrl = settings.portalUrl?.trim()
 
   return (
     <>
@@ -122,24 +119,7 @@ export default async function PropertiesPage({
         </div>
       </section>
 
-      {portalUrl ? (
-        <section className="section-tight on-dark deep">
-          <div className="container cta-band">
-            <h2 className="display inv" style={{ fontSize: 'var(--text-display-s)' }}>
-              More of what we represent is listed on Housing.com.
-            </h2>
-            <a
-              href={portalUrl}
-              className="btn btn-primary"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Explore available properties on Housing.com (opens in a new tab)"
-            >
-              Explore available properties
-            </a>
-          </div>
-        </section>
-      ) : null}
+      <PortalBand heading="More of what we represent is listed on Housing.com." />
     </>
   )
 }

@@ -5,6 +5,7 @@ import { CinematicHero } from '@/components/CinematicHero'
 import { PostCard } from '@/components/PostCard'
 import { PropertyCard } from '@/components/PropertyCard'
 import { Reveal } from '@/components/Reveal'
+import { PortalLink } from '@/components/PortalCta'
 import { primaryPhone, telHref } from '@/lib/contact'
 import { getFeaturedProperties, getPosts, getSiteSettings } from '@/lib/data'
 import { ORG_ID, SITE_URL, WEBSITE_ID, absoluteUrl, jsonLdGraph, jsonLdScript } from '@/lib/seo'
@@ -216,9 +217,12 @@ export default async function HomePage() {
           </Reveal>
           <Reveal delay={0.1}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', alignItems: 'flex-start' }}>
-              <Link href="/contact#enquiry" className="btn btn-primary">
-                Get in touch
-              </Link>
+              <div className="cta-actions">
+                <Link href="/contact#enquiry" className="btn btn-primary">
+                  Get in touch
+                </Link>
+                <PortalLink />
+              </div>
               {primaryPhone(settings) ? (
                 <a
                   href={telHref(primaryPhone(settings)!)}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PortalLink } from '@/components/PortalCta'
 import Link from 'next/link'
 
 import { Reveal } from '@/components/Reveal'
@@ -101,9 +102,12 @@ export default function ServicesPage() {
           <h2 className="display inv" style={{ fontSize: 'var(--text-display-s)' }}>
             Not sure which service fits? Describe the situation instead.
           </h2>
-          <Link href="/contact#enquiry" className="btn btn-primary">
-            Get in touch
-          </Link>
+          <div className="cta-actions">
+            <Link href="/contact#enquiry" className="btn btn-primary">
+              Get in touch
+            </Link>
+            <PortalLink />
+          </div>
         </div>
       </section>
     </>

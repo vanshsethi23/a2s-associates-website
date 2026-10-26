@@ -63,6 +63,20 @@ export function Footer({ settings }: { settings: SiteSetting }) {
                   <Link href={l.href}>{l.label}</Link>
                 </li>
               ))}
+              {/* Carries the portal link onto pages that carry no CTA band of
+                  their own, the privacy and terms pages among them. */}
+              {settings.portalUrl?.trim() ? (
+                <li>
+                  <a
+                    href={settings.portalUrl.trim()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Available properties on Housing.com (opens in a new tab)"
+                  >
+                    Available on Housing.com
+                  </a>
+                </li>
+              ) : null}
             </ul>
           </div>
           <div className="footer-col">

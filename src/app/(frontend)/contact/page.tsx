@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PortalBand } from '@/components/PortalCta'
 
 import { EnquiryForm } from '@/components/EnquiryForm'
 import { Reveal } from '@/components/Reveal'
@@ -105,6 +106,8 @@ export default async function ContactPage() {
           </div>
         </div>
       </section>
+
+      <PortalBand heading="Prefer to browse first? See what is currently available." />
     </>
   )
 }

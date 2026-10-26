@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PortalLink } from '@/components/PortalCta'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -294,9 +295,12 @@ export default async function PropertyDetailPage({ params }: Params) {
           <h2 className="display inv" style={{ fontSize: 'var(--text-display-s)' }}>
             Not quite the one? The brief matters more than the listing.
           </h2>
-          <Link href="/properties" className="btn btn-ghost">
-            View all properties
-          </Link>
+          <div className="cta-actions">
+            <Link href="/properties" className="btn btn-ghost">
+              View all properties
+            </Link>
+            <PortalLink variant="primary" />
+          </div>
         </div>
       </section>
     </>
