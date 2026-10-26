@@ -20,7 +20,8 @@
     "seed:remote": "cross-env SEED_TARGET=remote tsx --env-file=.env.production.local src/seed/index.ts",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
-    "build:deploy": "npm run migrate && npm run build",
+    "db:unblock": "tsx src/scripts/clearDevPushMarker.ts",
+    "build:deploy": "npm run db:unblock && npm run migrate && npm run build",
     "seed:contact": "tsx --env-file=.env src/seed/updateContact.ts"
   },
   "dependencies": {

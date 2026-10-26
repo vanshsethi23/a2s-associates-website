@@ -17,12 +17,33 @@ import { vercelBlobToken } from './blobToken'
 const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || 'file:./a2s.db'
 const isPostgres = /^postgres(ql)?:\/\//.test(dbUrl)
 
+/**
+ * Whether this Postgres URL points at a database on this machine.
+ *
+ * `push` must never run against a hosted database. NODE_ENV alone is not a
+ * safe signal: it is unset when a maintenance script like `seed:remote` runs
+ * from a laptop with DATABASE_URL pointed at Neon, so push would silently
+ * diff and rewrite the live schema and leave Payload's "ran in dev mode"
+ * marker behind — which then makes every later `payload migrate` stop and ask
+ * an interactive question no deploy can answer. Keying on the host instead
+ * means the local dev convenience stays, and remote databases only ever change
+ * through a committed migration.
+ */
+const isLocalPostgres = (url: string): boolean => {
+  try {
+    const { hostname } = new URL(url)
+    return ['localhost', '127.0.0.1', '::1', '[::1]', ''].includes(hostname)
+  } catch {
+    return false
+  }
+}
+
 export const databaseAdapter = isPostgres
   ? postgresAdapter({
       pool: { connectionString: dbUrl },
       // Schema is applied by committed migrations in production; `push` would
       // try to diff the live database at boot, which serverless must not do.
-      push: process.env.NODE_ENV !== 'production',
+      push: process.env.NODE_ENV !== 'production' && isLocalPostgres(dbUrl),
     })
   : sqliteAdapter({ client: { url: dbUrl } })
 
